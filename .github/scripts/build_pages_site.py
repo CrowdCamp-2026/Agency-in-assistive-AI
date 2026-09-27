@@ -202,7 +202,7 @@ def render_review(entries: list[dict]) -> str:
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Branch demo review — Agency in Assistive AI</title>
+  <title>Wicked Problem #2: Agency in Assistive AI</title>
   <style>
     :root {{
       --bg: #0b0f17;
@@ -253,7 +253,7 @@ def render_review(entries: list[dict]) -> str:
 </head>
 <body>
   <div class="wrap">
-    <h1>Branch demo review</h1>
+    <h1>Wicked Problem #2: Agency in Assistive AI</h1>
     <p class="lede">
       Every branch in this repo is published here so demos can be reviewed side by side.
       The <a href="../">site root</a> shows <strong>main</strong>'s <code>library.html</code> only.
