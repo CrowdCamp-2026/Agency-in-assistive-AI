@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Build a GitHub Pages site that previews every branch's HTML demos.
 
-- main  → only library.html, published at / and /library.html
-- others → all files under /<branch-slug>/, with every .html linked from /review/
+Published under /demo/:
+- main  → only library.html at /demo/ and /demo/library.html
+- others → all files under /demo/<branch-slug>/
+- review hub → /demo/review/
 """
 
 from __future__ import annotations
@@ -19,6 +21,10 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SITE = REPO_ROOT / "site"
+# All demos live under this path on GitHub Pages:
+# https://crowdcamp-2026.github.io/Agency-in-assistive-AI/demo/
+DEMO_PREFIX = "demo"
+DEMO = SITE / DEMO_PREFIX
 SKIP_BRANCHES = {"HEAD", "gh-pages"}
 
 # Friendly labels shown on the review hub (git branch names stay unchanged).
@@ -168,14 +174,14 @@ def render_review(entries: list[dict]) -> str:
     for entry in entries:
         branch = entry["branch"]
         label = entry.get("label") or display_name(branch)
-        base = entry["path"].rstrip("/")
         pages = entry.get("pages") or []
         note = entry.get("note") or ""
 
         if branch == "main":
             href = "../library.html"
         elif pages:
-            href = f"..{escape(base)}/"
+            slug = entry.get("slug") or ""
+            href = f"../{escape(slug)}/"
         else:
             href = ""
 
@@ -256,8 +262,8 @@ def render_review(entries: list[dict]) -> str:
     <h1>Wicked Problem #2: Agency in Assistive AI</h1>
     <p class="lede">
       Every branch in this repo is published here so demos can be reviewed side by side.
-      The <a href="../">site root</a> shows <strong>main</strong>'s <code>library.html</code> only.
-      Other branches publish all of their pages under <code>/&lt;branch&gt;/</code>.
+      The <a href="../">demo home</a> shows <strong>Qi</strong>'s <code>library.html</code> only.
+      Other branches publish under <code>/{DEMO_PREFIX}/&lt;branch&gt;/</code>.
     </p>
     <div class="grid">
       {''.join(cards)}
@@ -272,58 +278,80 @@ def write_summary(entries: list[dict]) -> None:
     summary_path = os.environ.get("GITHUB_STEP_SUMMARY")
     if not summary_path:
         return
+    base = f"/{DEMO_PREFIX}"
     lines = [
         "## Preview site built",
         "",
-        "- **Root (main / library only):** `/` and `/library.html`",
-        "- **All branches & pages:** `/review/`",
+        f"- **Site URL:** `https://crowdcamp-2026.github.io/Agency-in-assistive-AI{base}/`",
+        f"- **Root (Qi / library only):** `{base}/` and `{base}/library.html`",
+        f"- **All branches & pages:** `{base}/review/`",
         "",
         "Branches included:",
     ]
     for entry in sorted(entries, key=lambda e: (e["branch"] != "main", e["branch"].lower())):
         if entry["branch"] == "main":
-            lines.append("- `main` → `/` (library only)")
+            lines.append(f"- `main` (Qi) → `{base}/` (library only)")
         else:
             lines.append(f"- `{entry['branch']}` → `{entry['path']}`")
     Path(summary_path).write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
+def write_root_redirect() -> None:
+    """Send visitors from the Pages project root to /demo/."""
+    (SITE / "index.html").write_text(
+        f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="refresh" content="0; url={DEMO_PREFIX}/">
+  <title>Redirecting…</title>
+  <link rel="canonical" href="{DEMO_PREFIX}/">
+</head>
+<body>
+  <p>Redirecting to <a href="{DEMO_PREFIX}/">{DEMO_PREFIX}/</a>…</p>
+</body>
+</html>
+""",
+        encoding="utf-8",
+    )
+
+
 def main() -> None:
     if SITE.exists():
         shutil.rmtree(SITE)
-    SITE.mkdir(parents=True)
-    (SITE / "review").mkdir()
+    DEMO.mkdir(parents=True)
+    (DEMO / "review").mkdir()
 
     branches = list_branches()
     print("Found branches:", ", ".join(branches) or "(none)")
     entries: list[dict] = []
 
-    # --- main: library only at site root ---
+    # --- main: library only under /demo/ ---
     if "main" in branches and branch_has_file("main", "library.html"):
         library = show_file("main", "library.html").decode("utf-8", errors="replace")
         library = inject_review_banner(library)
-        (SITE / "library.html").write_text(library, encoding="utf-8")
-        (SITE / "index.html").write_text(library, encoding="utf-8")
+        (DEMO / "library.html").write_text(library, encoding="utf-8")
+        (DEMO / "index.html").write_text(library, encoding="utf-8")
         entries.append(
             {
                 "branch": "main",
                 "label": display_name("main"),
                 "slug": "",
-                "path": "/",
+                "path": f"/{DEMO_PREFIX}/",
                 "pages": ["library.html"],
                 "note": "",
             }
         )
-        print("Main: published library.html as / and /library.html")
+        print(f"Main: published library.html as /{DEMO_PREFIX}/ and /{DEMO_PREFIX}/library.html")
     elif "main" in branches:
-        print("::warning::main has no library.html — root will be the review hub")
+        print(f"::warning::main has no library.html — /{DEMO_PREFIX}/ will be the review hub")
 
-    # --- every other branch: full tree under /<slug>/ ---
+    # --- every other branch: full tree under /demo/<slug>/ ---
     for branch in branches:
         if branch == "main":
             continue
         slug = slugify(branch)
-        dest = SITE / slug
+        dest = DEMO / slug
         extract_branch(branch, dest)
         pages = find_html_pages(dest)
         if not pages:
@@ -335,31 +363,36 @@ def main() -> None:
                 "branch": branch,
                 "label": display_name(branch),
                 "slug": slug,
-                "path": f"/{slug}/",
+                "path": f"/{DEMO_PREFIX}/{slug}/",
                 "pages": pages,
                 "note": "",
             }
         )
-        print(f"Published branch '{branch}' → /{slug}/ ({len(pages)} html page(s))")
+        print(
+            f"Published branch '{branch}' → /{DEMO_PREFIX}/{slug}/ "
+            f"({len(pages)} html page(s))"
+        )
 
     review_html = render_review(entries)
-    (SITE / "review" / "index.html").write_text(review_html, encoding="utf-8")
-    (SITE / "review" / "manifest.json").write_text(
+    (DEMO / "review" / "index.html").write_text(review_html, encoding="utf-8")
+    (DEMO / "review" / "manifest.json").write_text(
         json.dumps(entries, indent=2) + "\n", encoding="utf-8"
     )
 
-    if not (SITE / "index.html").exists():
-        # No main library — use review hub as landing page
-        (SITE / "index.html").write_text(
+    if not (DEMO / "index.html").exists():
+        # No main library — use review hub as landing page under /demo/
+        (DEMO / "index.html").write_text(
             review_html.replace('href="../"', 'href="review/"').replace(
                 'href="../library.html"', 'href="review/"'
             ),
             encoding="utf-8",
         )
-        print("Root fallback: review hub")
+        print(f"/{DEMO_PREFIX}/ fallback: review hub")
 
+    write_root_redirect()
     write_summary(entries)
-    print("Wrote site/review/index.html")
+    print(f"Wrote site/{DEMO_PREFIX}/review/index.html")
+    print(f"Site URL: https://crowdcamp-2026.github.io/Agency-in-assistive-AI/{DEMO_PREFIX}/")
 
 
 if __name__ == "__main__":
