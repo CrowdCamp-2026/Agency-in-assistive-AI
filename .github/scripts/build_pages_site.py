@@ -171,30 +171,28 @@ def render_review(entries: list[dict]) -> str:
         base = entry["path"].rstrip("/")
         pages = entry.get("pages") or []
         note = entry.get("note") or ""
-        links: list[str] = []
+
         if branch == "main":
-            links.append(
-                '<li><a href="../library.html">library.html</a> '
-                '<span class="tag">root</span></li>'
+            href = "../library.html"
+        elif pages:
+            href = f"..{escape(base)}/"
+        else:
+            href = ""
+
+        if href:
+            action = (
+                f'<a class="open-demo" href="{href}">Open demo →</a>'
             )
         else:
-            links.append(
-                f'<li><a href="..{escape(base)}/">Open branch</a> '
-                f'<span class="tag">index</span></li>'
-            )
-            for page in pages:
-                links.append(
-                    f'<li><a href="..{escape(base)}/{escape(page)}">{escape(page)}</a></li>'
-                )
+            action = '<p class="note"><em>No HTML pages</em></p>'
+
         note_html = f'<p class="note">{escape(note)}</p>' if note else ""
         cards.append(
             f"""
 <article class="card">
   <h2><code>{escape(label)}</code></h2>
   {note_html}
-  <ul>
-    {''.join(links) if links else '<li><em>No HTML pages</em></li>'}
-  </ul>
+  {action}
 </article>
 """
         )
@@ -240,23 +238,17 @@ def render_review(entries: list[dict]) -> str:
     }}
     .card h2 {{ margin: 0 0 0.5rem; font-size: 1rem; font-weight: 600; }}
     .card code {{ font-size: 0.95rem; color: #e2e8f0; }}
-    .note {{ color: var(--muted); font-size: 0.8rem; margin: 0 0 0.6rem; }}
-    ul {{ margin: 0; padding-left: 1.1rem; line-height: 1.7; font-size: 0.9rem; }}
+    .note {{ color: var(--muted); font-size: 0.8rem; margin: 0 0 0.75rem; }}
+    .open-demo {{
+      display: inline-block;
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+    }}
+    .open-demo:hover {{ text-decoration: underline; }}
     a {{ color: var(--accent); text-decoration: none; }}
     a:hover {{ text-decoration: underline; }}
-    .tag {{
-      display: inline-block;
-      font-size: 0.65rem;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: #cbd5e1;
-      background: #1e293b;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 0.05rem 0.45rem;
-      margin-left: 0.25rem;
-      vertical-align: middle;
-    }}
   </style>
 </head>
 <body>
