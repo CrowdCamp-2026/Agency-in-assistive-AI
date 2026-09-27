@@ -174,9 +174,9 @@ def render_review(entries: list[dict]) -> str:
         links: list[str] = []
         if branch == "main":
             links.append(
-                '<li><a href="../">library.html</a> <span class="tag">root</span></li>'
+                '<li><a href="../library.html">library.html</a> '
+                '<span class="tag">root</span></li>'
             )
-            links.append('<li><a href="../library.html">/library.html</a></li>')
         else:
             links.append(
                 f'<li><a href="..{escape(base)}/">Open branch</a> '
