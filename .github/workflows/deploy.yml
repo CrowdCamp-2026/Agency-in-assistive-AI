@@ -39,6 +39,12 @@ jobs:
           ref: claireoconnor612-patch-1
           path: site/claire
 
+      - name: Checkout marjory branch
+        uses: actions/checkout@v4
+        with:
+          ref: marjory-pineda
+          path: site/marjory
+
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
 
