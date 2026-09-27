@@ -6,61 +6,35 @@ A tangible multimodal interaction prototype designed to facilitate **communicati
 
 ## 🎯 Core Scenario: Classroom Break Negotiation
 
-During high sensory load or academic frustration, an autistic student may experience acute sensory overload and need a coping break. However:
-- Traditional verbal communication can become inaccessible or distressing during overload.
-- Parents/educators may worry about missing crucial class time or misunderstand the child's escalation level.
-- Misaligned expectations can escalate into shutdowns or meltdowns.
-
-**HarmonyCube** bridges this gap through a 6-sided tangible device that translates **tactile & gestural inputs** from the child and **text/context cues** from the parent into an **AI / Clinician-mediated compromise** that preserves autonomy, dignity, and classroom safety.
+During high sensory load or academic frustration, an autistic student may experience acute sensory overload and need a coping break.
+- **Child's Input**: Expressed via **Tactile Squeeze Force** (Face 1), communicating stress level without demanding spoken words.
+- **Face 2 (Translation & Arrival Notification)**:
+  - **Child ➔ Parent Translation**: Converts continuous physical squeeze force into clear natural language for the parent (*"Classroom noise tension is rising. I need a short break"*).
+  - **Parent ➔ Child Notification**: When the parent sends a message, Face 2 alerts the child via a **gentle tactile vibration pulse on the cube and a soft, pleasant "ding" chime** so the child knows a message has arrived.
+- **Parent's Input**: Expressed via **Text Messages & Guidance Cues** (Face 3).
+- **Harmony / Negotiation Side**: Where **AI or a Clinician** steps in with real-time negotiation (Face 4).
+- **Faces 5 & 6**: Blank / reserved.
 
 ---
 
-## 🎲 The 6 Cube Faces
+## 🎲 The Cube Faces Setup
 
 ```
-                +----------------------------+
-                |  FACE 5: CALMING OUTPUT    |
-                |  (Breathing Orb & Haptics) |
-+---------------+----------------------------+---------------+----------------------------+
-| FACE 2: GESTURE|  FACE 1: CHILD TACTILE     | FACE 3: PARENT | FACE 4: HARMONY & AI       |
-| (Spatial Motion|  (Pressure, Squeeze, Taps) | (Text & Cues) | (Clinician Mediation Engine)|
-+---------------+----------------------------+---------------+----------------------------+
-                |  FACE 6: CLASSROOM CONTEXT |
-                |  (Noise, Visuals, Timer)   |
-                +----------------------------+
+                     ┌────────────────────────────┐
+                     │ FACE 5: (Blank / Reserved) │
+┌────────────────────┼────────────────────────────┼────────────────────┬────────────────────────────┐
+│ FACE 2: TRANSLATION│ FACE 1: CHILD TACTILE      │ FACE 3: PARENT     │ FACE 4: HARMONY & AI       │
+│ (Squeeze ➔ Text &  │ (Pressure & Squeeze Pad)   │ (Text Messages)    │ (Clinician Mediation Side) │
+│ Vibration/Ding)    │                            │                    │                            │
+└────────────────────┼────────────────────────────┼────────────────────┴────────────────────────────┘
+                     │ FACE 6: (Blank / Reserved) │
+                     └────────────────────────────┘
 ```
 
-| Face | Role / Modality | Interaction Design |
+| Face | Modality & Role | Function in Communication |
 | :--- | :--- | :--- |
-| **Face 1: Child Tactile** | Squeeze / Texture / Tap | Continuous pressure sensor (0–100%), sensory texture slider (smooth → ribbed), rhythmic tap cadence tracker to quantify internal sensory pressure without forcing speech. |
-| **Face 2: Child Gesture** | Spatial Motion / Tilt | Built-in IMU gestures: *"Need Space"* (Push Away), *"Overwhelmed"* (Tilt Down), *"Need Rocking"* (Gentle Oscillation), *"Emergency Exit"* (Rapid Shake). |
-| **Face 3: Parent Text** | Typed Guidance & Cues | Mobile/Bluetooth connected text input with proactive empathy chips (*"Finish 2 more problems then 5m break?"*, *"Headphones first?"*, *"I see you are overloaded"*). |
-| **Face 4: Harmony / Negotiation** | AI & Clinician Mediation | Real-time negotiation engine synthesizing child's biometric/tactile distress with parent's context. Generates 3 calibrated compromise proposals with clinical backing. |
-| **Face 5: Calming Regulation** | Sensory Feedback / Output | 4-7-8 bioluminescent breathing visualizer, haptic micro-pulses, and soothing audio harmonics to facilitate down-regulation. |
-| **Face 6: Classroom Context** | Environmental Sensors | Ambient decibel level meter, visual flicker index, and transition timer countdown to support informed co-regulation. |
-
----
-
-## 🧠 Clinical & AI Negotiation Model
-
-The **AI / Clinician Mediation Engine** operates on a tripartite co-regulation framework:
-1. **Sensory Distress Index (SDI)**: Computed from tactile squeeze pressure + gesture intensity + ambient classroom noise.
-2. **Parent Goal Weighting**: Balances task continuity vs. sensory relief.
-3. **Adaptive Compromise Generation**:
-   - **Tier 1 (Mild Overload - SDI 20-40%)**: In-desk micro-resets (noise-canceling headphones + tactile fidget for 3 mins).
-   - **Tier 2 (Moderate Overload - SDI 41-75%)**: Classroom quiet corner break (beanbag sensory station for 5 mins, then check-in).
-   - **Tier 3 (High Overload - SDI >75%)**: Immediate sensory exit / hallway decompression walk with parent/aide.
-
----
-
-## 🚀 Key Features of this Interactive Prototype
-
-- **Live 3D Interactive Cube**: Fully rotatable 3D canvas with real-time dynamic texture rendering on all faces.
-- **Multimodal Simulators**:
-  - Interactive squeeze & tap pad with dynamic pressure feedback.
-  - Interactive gesture trigger (Tilt, Push, Wave, Shake).
-  - Parent text message composer with instant AI auto-suggestions.
-  - Live AI negotiation engine with interactive compromise voting.
-- **Binaural / Calming Web Audio Engine**: Generates gentle organic harmonic tones upon tactile interaction and successful negotiation harmony.
-- **Split Role Dual-View**: Toggle between full 3D interactive view and synchronized multi-panel dashboard (Child, Parent, AI Clinician).
-- **Preset Real-World Scenarios**: Test scenarios like *"Math Test Overload"*, *"Noisy Group Work"*, and *"End-of-Day Fatigue"*.
+| **Face 1: Child Tactile** | **Tactile / Squeeze Force** | Continuous pressure sensor (0–100%) and ribbed tactile touch pad. Child squeezes to communicate distress level without spoken words. |
+| **Face 2: Translation Face** | **Multimodal Translation & Alert** | (1) **Child ➔ Parent**: Translates Squeeze Force $\rightarrow$ Readable Text; (2) **Parent ➔ Child**: Triggers **Tactile Vibration Pulse + Soft Ding Chime** when a parent message arrives. |
+| **Face 3: Parent Text** | **Typed Communication** | Text input interface for family members to send supportive messages, questions, and expectations. |
+| **Face 4: Harmony / Negotiation** | **AI & Clinician Step-In** | **The Core Negotiation Side**: AI/Clinician synthesizes child's sensory distress with parent text to generate 3 calibrated compromise choices. |
+| **Face 5 & 6** | **Blank / Reserved** | Blank faces. |

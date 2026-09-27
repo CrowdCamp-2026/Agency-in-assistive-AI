@@ -5,56 +5,58 @@
 
 // Application State
 const state = {
+  activeView: 'cube', // 'cube', 'harmony', 'instructions'
   activeFace: 'child-tactile',
   sensoryPressure: 45, // 0 to 100%
-  activeGesture: 'Need Space',
+  vibrationAlertActive: false,
   noiseLevel: 68, // dB
   visualFlicker: 'Medium',
   classTimeRemaining: 15, // minutes
   soundEnabled: true,
   currentScenario: 'math-test',
   messages: [
-    { sender: 'child', text: '🖐️ Squeezing hard (High Sensory Load)', time: '10:14 AM' },
+    { sender: 'child', text: '🖐️ Squeezing at 45% ➔ Translated: "Classroom noise tension is rising."', time: '10:14 AM' },
     { sender: 'parent', text: 'Can we try 3 more math questions before we step out?', time: '10:15 AM' },
-    { sender: 'ai', text: '⚖️ Clinician Suggestion: Child is at 65% overload. Recommend in-desk 2m headphone reset, then assess.', time: '10:15 AM' }
+    { sender: 'ai', text: '⚖️ Clinician Suggestion: Child is at moderate load. Recommend in-desk 2m headphone reset, then assess.', time: '10:15 AM' }
   ],
   selectedCompromiseId: 1,
   compromises: [
     {
       id: 1,
       title: 'In-Desk Sensory Reset',
-      desc: 'Put on noise-canceling headphones + tactile fidget for 3 mins at desk, then do 2 questions.',
-      tag: 'Micro-Break (Recommended)',
+      desc: 'Put on noise-canceling headphones + tactile fidget for 3 minutes at desk, then complete 2 questions.',
+      tag: 'Tier 1: Micro-Break (Recommended)',
       harmonyScore: 88,
-      duration: '3 mins'
+      duration: '3 mins',
+      rationale: 'Preserves classroom continuity while dampening auditory overload immediately.'
     },
     {
       id: 2,
       title: 'Quiet Corner Station',
-      desc: 'Move to back-of-room beanbag sensory station for 5 mins with sensory cube, then rejoin.',
-      tag: 'Moderate Support',
+      desc: 'Move to back-of-room beanbag sensory station for 5 minutes with sensory cube, then rejoin worksheet.',
+      tag: 'Tier 2: Moderate Support',
       harmonyScore: 78,
-      duration: '5 mins'
+      duration: '5 mins',
+      rationale: 'Provides physical distance from classroom movement while staying in the room.'
     },
     {
       id: 3,
       title: 'Immediate Hallway Decompression',
-      desc: 'Full sensory exit: 5-minute cool-down walk with parent/aide to water fountain.',
-      tag: 'High Relief',
+      desc: 'Full sensory exit: 5-minute cool-down walk with parent or aide to get water and regulate vestibular input.',
+      tag: 'Tier 3: High Relief',
       harmonyScore: 92,
-      duration: '5-8 mins'
+      duration: '5-8 mins',
+      rationale: 'Essential when sympathetic nervous system is in acute fight-or-flight.'
     }
   ]
 };
 
-// Face Target Orientations for Camera/Cube Rotation
+// Exact Face Target Rotations for 3D Cube (BoxGeometry)
 const faceRotations = {
-  'child-tactile': { x: 0, y: 0 },
-  'child-gesture': { x: 0, y: Math.PI / 2 },
-  'parent-text': { x: 0, y: -Math.PI / 2 },
-  'harmony-ai': { x: 0, y: Math.PI },
-  'calm-output': { x: -Math.PI / 2, y: 0 },
-  'classroom-context': { x: Math.PI / 2, y: 0 }
+  'child-tactile': { x: 0, y: 0 },                    // Front (+Z) - Face 1
+  'translation-face': { x: 0, y: Math.PI / 2 },       // Left (-X) - Face 2
+  'parent-text': { x: 0, y: -Math.PI / 2 },           // Right (+X) - Face 3
+  'harmony-ai': { x: 0, y: Math.PI }                  // Back (-Z) - Face 4
 };
 
 // Canvas references for 6 faces
@@ -97,6 +99,80 @@ function playCalmTone(frequency = 440, type = 'sine', duration = 0.5) {
   }
 }
 
+// Pleasant "Ding" Chime for incoming message alert
+function playDingSound() {
+  if (!state.soundEnabled) return;
+  try {
+    initAudio();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+
+    // Primary bell tone
+    const osc1 = audioCtx.createOscillator();
+    const gain1 = audioCtx.createGain();
+    osc1.type = 'sine';
+    osc1.frequency.setValueAtTime(880, audioCtx.currentTime); // A5
+
+    gain1.gain.setValueAtTime(0.01, audioCtx.currentTime);
+    gain1.gain.exponentialRampToValueAtTime(0.25, audioCtx.currentTime + 0.02);
+    gain1.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+
+    osc1.connect(gain1);
+    gain1.connect(audioCtx.destination);
+
+    // Harmonic bell chime
+    const osc2 = audioCtx.createOscillator();
+    const gain2 = audioCtx.createGain();
+    osc2.type = 'triangle';
+    osc2.frequency.setValueAtTime(1320, audioCtx.currentTime); // E6
+
+    gain2.gain.setValueAtTime(0.01, audioCtx.currentTime);
+    gain2.gain.exponentialRampToValueAtTime(0.12, audioCtx.currentTime + 0.02);
+    gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.6);
+
+    osc2.connect(gain2);
+    gain2.connect(audioCtx.destination);
+
+    osc1.start();
+    osc2.start();
+    osc1.stop(audioCtx.currentTime + 0.8);
+    osc2.stop(audioCtx.currentTime + 0.6);
+  } catch (e) {
+    console.warn('Ding sound error', e);
+  }
+}
+
+// Haptic Vibration Audio Rumble
+function playHapticRumble(duration = 0.6, freq = 75) {
+  if (!state.soundEnabled) return;
+  try {
+    initAudio();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.setValueAtTime(120, audioCtx.currentTime);
+
+    gain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+    gain.gain.linearRampToValueAtTime(0.18, audioCtx.currentTime + 0.06);
+    gain.gain.linearRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch (e) {
+    console.warn('Haptic audio error', e);
+  }
+}
+
 function playHarmonyChord() {
   if (!state.soundEnabled) return;
   [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
@@ -105,7 +181,66 @@ function playHarmonyChord() {
 }
 
 // -------------------------------------------------------------
-// Dynamic Canvas Renderers for the 6 Cube Faces
+// View Switching Function
+// -------------------------------------------------------------
+function switchView(viewName) {
+  state.activeView = viewName;
+  
+  document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.main-tab-btn').forEach(b => b.classList.remove('active'));
+
+  if (viewName === 'cube') {
+    document.getElementById('panelCube').classList.add('active');
+    document.getElementById('viewTabCube').classList.add('active');
+    setTimeout(() => {
+      const container = document.getElementById('cubeCanvasContainer');
+      if (container && camera && renderer) {
+        const w = container.clientWidth;
+        const h = container.clientHeight || 500;
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+      }
+    }, 50);
+  } else if (viewName === 'harmony') {
+    document.getElementById('panelHarmony').classList.add('active');
+    document.getElementById('viewTabHarmony').classList.add('active');
+  } else if (viewName === 'instructions') {
+    document.getElementById('panelInstructions').classList.add('active');
+    document.getElementById('viewTabInstructions').classList.add('active');
+  }
+
+  playCalmTone(480, 'sine', 0.2);
+}
+
+// -------------------------------------------------------------
+// Translation Helpers: Squeeze -> Text Translation
+// -------------------------------------------------------------
+
+function getSqueezeTranslation(pressure) {
+  if (pressure > 75) {
+    return {
+      category: 'Acute Overload',
+      text: '"Sensory overload is severe. I urgently need to leave the classroom for a break."',
+      color: '#ef4444'
+    };
+  } else if (pressure > 45) {
+    return {
+      category: 'Moderate Overload',
+      text: '"Classroom noise tension is rising. I need a quiet buffer or short reset."',
+      color: '#f59e0b'
+    };
+  } else {
+    return {
+      category: 'Mild / Regulated',
+      text: '"I am feeling mostly okay, managing the task with light tactile pressure."',
+      color: '#06b6d4'
+    };
+  }
+}
+
+// -------------------------------------------------------------
+// Dynamic Canvas Renderers for Cube Faces
 // -------------------------------------------------------------
 
 function createFaceCanvas(faceIndex) {
@@ -116,17 +251,144 @@ function createFaceCanvas(faceIndex) {
   return { canvas, ctx, faceIndex };
 }
 
-// Face 0: Front (+Z) -> Child Tactile & Squeeze
+// Render Blank Face (For Faces 5 & 6)
+function renderBlankFace(ctx) {
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, FACE_SIZE, FACE_SIZE);
+  ctx.lineWidth = 6;
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+  ctx.strokeRect(6, 6, FACE_SIZE - 12, FACE_SIZE - 12);
+}
+
+// Face 0: Right (+X) -> Face 3 Parent Text & Messages
+function renderParentTextFace(ctx) {
+  ctx.fillStyle = '#0f172a';
+  ctx.fillRect(0, 0, FACE_SIZE, FACE_SIZE);
+
+  ctx.lineWidth = 14;
+  ctx.strokeStyle = '#8b5cf6';
+  ctx.strokeRect(7, 7, FACE_SIZE - 14, FACE_SIZE - 14);
+
+  ctx.fillStyle = '#8b5cf6';
+  ctx.font = 'bold 28px sans-serif';
+  ctx.fillText('FACE 3: PARENT TEXT', 35, 55);
+
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '18px sans-serif';
+  ctx.fillText('Family Support & Guidance Cues', 35, 85);
+
+  const parentMsgs = state.messages.filter(m => m.sender === 'parent');
+  const latest = parentMsgs[parentMsgs.length - 1] || { text: 'How are you feeling right now?' };
+
+  ctx.fillStyle = 'rgba(139, 92, 246, 0.25)';
+  ctx.strokeStyle = 'rgba(139, 92, 246, 0.6)';
+  ctx.lineWidth = 2;
+  ctx.roundRect(35, 125, FACE_SIZE - 70, 150, 16);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = '#f3e8ff';
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillText('💬 Latest Parent Message:', 55, 160);
+
+  ctx.font = '20px sans-serif';
+  ctx.fillStyle = '#ffffff';
+  wrapText(ctx, `"${latest.text}"`, 55, 200, FACE_SIZE - 110, 26);
+
+  ctx.fillStyle = '#c084fc';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('NOTIFYING CHILD CUBE:', 35, 320);
+
+  ctx.fillStyle = 'rgba(139, 92, 246, 0.35)';
+  ctx.roundRect(35, 340, FACE_SIZE - 70, 60, 10);
+  ctx.fill();
+
+  ctx.fillStyle = '#a78bfa';
+  ctx.font = 'bold 18px sans-serif';
+  ctx.fillText('🔔 Vibration Alert & Ding Chime', 55, 375);
+
+  ctx.fillStyle = '#cbd5e1';
+  ctx.font = '14px sans-serif';
+  ctx.fillText('Informs child of incoming message quietly', 55, 435);
+}
+
+// Face 1: Left (-X) -> Face 2: Bidirectional Translation Face
+function renderTranslationFace(ctx) {
+  ctx.fillStyle = '#0b192c';
+  ctx.fillRect(0, 0, FACE_SIZE, FACE_SIZE);
+
+  ctx.lineWidth = 14;
+  ctx.strokeStyle = '#38bdf8';
+  ctx.strokeRect(7, 7, FACE_SIZE - 14, FACE_SIZE - 14);
+
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = 'bold 28px sans-serif';
+  ctx.fillText('FACE 2: TRANSLATION', 35, 55);
+
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '18px sans-serif';
+  ctx.fillText('Bidirectional Multimodal Bridge', 35, 85);
+
+  const trans = getSqueezeTranslation(state.sensoryPressure);
+
+  // Channel 1: Child Squeeze -> Parent Text
+  ctx.fillStyle = 'rgba(6, 182, 212, 0.15)';
+  ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)';
+  ctx.lineWidth = 2;
+  ctx.roundRect(35, 115, FACE_SIZE - 70, 155, 12);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = '#38bdf8';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText(`🖐️ CHILD SQUEEZE (${Math.round(state.sensoryPressure)}%) ➔ TEXT:`, 50, 145);
+
+  ctx.fillStyle = trans.color;
+  ctx.font = 'bold 15px sans-serif';
+  ctx.fillText(`[${trans.category}]`, 50, 172);
+
+  ctx.fillStyle = '#ffffff';
+  ctx.font = '16px sans-serif';
+  wrapText(ctx, trans.text, 50, 202, FACE_SIZE - 100, 22);
+
+  // Channel 2: Parent -> Child Arrival Notification (Vibration & Ding)
+  ctx.fillStyle = 'rgba(139, 92, 246, 0.15)';
+  ctx.strokeStyle = 'rgba(139, 92, 246, 0.5)';
+  ctx.lineWidth = 2;
+  ctx.roundRect(35, 290, FACE_SIZE - 70, 175, 12);
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.fillStyle = '#c084fc';
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('🔔 PARENT ➔ CHILD NOTIFICATION:', 50, 320);
+
+  ctx.fillStyle = '#a78bfa';
+  ctx.font = 'bold 17px sans-serif';
+  ctx.fillText('Vibration Pulse + Ding Sound Alert', 50, 355);
+
+  ctx.fillStyle = '#94a3b8';
+  ctx.font = '14px sans-serif';
+  ctx.fillText('Alerts child that parent sent a new message', 50, 385);
+
+  // Draw Vibration waveform bars
+  const t = Date.now() * 0.005;
+  for (let i = 0; i < 10; i++) {
+    const barH = 15 + Math.sin(t + i * 0.7) * 12;
+    ctx.fillStyle = '#c084fc';
+    ctx.fillRect(50 + i * 38, 445 - barH, 24, barH);
+  }
+}
+
+// Face 4: Front (+Z) -> Face 1 Child Tactile & Squeeze
 function renderChildTactileFace(ctx) {
   ctx.fillStyle = '#0f172a';
   ctx.fillRect(0, 0, FACE_SIZE, FACE_SIZE);
 
-  // Border glow
   ctx.lineWidth = 14;
   ctx.strokeStyle = '#06b6d4';
   ctx.strokeRect(7, 7, FACE_SIZE - 14, FACE_SIZE - 14);
 
-  // Header
   ctx.fillStyle = '#06b6d4';
   ctx.font = 'bold 28px sans-serif';
   ctx.fillText('FACE 1: CHILD TACTILE', 35, 55);
@@ -135,7 +397,6 @@ function renderChildTactileFace(ctx) {
   ctx.font = '18px sans-serif';
   ctx.fillText('Pressure & Squeeze Sensor', 35, 85);
 
-  // Squeeze circle visualizer
   const centerX = FACE_SIZE / 2;
   const centerY = 240;
   const radius = 90 + (state.sensoryPressure * 0.4);
@@ -156,7 +417,6 @@ function renderChildTactileFace(ctx) {
   ctx.arc(centerX, centerY, 80, 0, Math.PI * 2);
   ctx.stroke();
 
-  // Value Display
   ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 44px sans-serif';
   ctx.textAlign = 'center';
@@ -166,7 +426,6 @@ function renderChildTactileFace(ctx) {
   ctx.fillStyle = '#bae6fd';
   ctx.fillText('Distress / Squeeze Force', centerX, centerY + 40);
 
-  // Texture Ridges simulation at bottom
   ctx.textAlign = 'left';
   ctx.fillStyle = '#94a3b8';
   ctx.font = 'bold 18px sans-serif';
@@ -179,118 +438,7 @@ function renderChildTactileFace(ctx) {
   }
 }
 
-// Face 1: Right (+X) -> Parent Text & Cues
-function renderParentTextFace(ctx) {
-  ctx.fillStyle = '#0f172a';
-  ctx.fillRect(0, 0, FACE_SIZE, FACE_SIZE);
-
-  ctx.lineWidth = 14;
-  ctx.strokeStyle = '#8b5cf6';
-  ctx.strokeRect(7, 7, FACE_SIZE - 14, FACE_SIZE - 14);
-
-  ctx.fillStyle = '#8b5cf6';
-  ctx.font = 'bold 28px sans-serif';
-  ctx.fillText('FACE 3: PARENT INPUT', 35, 55);
-
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '18px sans-serif';
-  ctx.fillText('Text & Calibrated Guidance', 35, 85);
-
-  // Last parent message bubble
-  const parentMsgs = state.messages.filter(m => m.sender === 'parent');
-  const latest = parentMsgs[parentMsgs.length - 1] || { text: 'How are you feeling right now?' };
-
-  ctx.fillStyle = 'rgba(139, 92, 246, 0.25)';
-  ctx.strokeStyle = 'rgba(139, 92, 246, 0.6)';
-  ctx.lineWidth = 2;
-  ctx.roundRect(35, 125, FACE_SIZE - 70, 150, 16);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = '#f3e8ff';
-  ctx.font = 'bold 18px sans-serif';
-  ctx.fillText('💬 Parent Message:', 55, 160);
-
-  ctx.font = '20px sans-serif';
-  ctx.fillStyle = '#ffffff';
-  wrapText(ctx, `"${latest.text}"`, 55, 200, FACE_SIZE - 110, 26);
-
-  // Quick Empathy Tags
-  ctx.fillStyle = '#c084fc';
-  ctx.font = 'bold 16px sans-serif';
-  ctx.fillText('ACTIVE CUES:', 35, 320);
-
-  const cues = ['⏱️ 3 Min Buffer', '🎧 Headphones First', '🤝 Co-Regulating'];
-  cues.forEach((cue, idx) => {
-    ctx.fillStyle = 'rgba(139, 92, 246, 0.35)';
-    ctx.roundRect(35, 340 + (idx * 45), FACE_SIZE - 70, 36, 10);
-    ctx.fill();
-
-    ctx.fillStyle = '#f3e8ff';
-    ctx.font = '16px sans-serif';
-    ctx.fillText(cue, 55, 364 + (idx * 45));
-  });
-}
-
-// Face 2: Left (-X) -> Child Gesture Sensor
-function renderChildGestureFace(ctx) {
-  ctx.fillStyle = '#0f172a';
-  ctx.fillRect(0, 0, FACE_SIZE, FACE_SIZE);
-
-  ctx.lineWidth = 14;
-  ctx.strokeStyle = '#06b6d4';
-  ctx.strokeRect(7, 7, FACE_SIZE - 14, FACE_SIZE - 14);
-
-  ctx.fillStyle = '#06b6d4';
-  ctx.font = 'bold 28px sans-serif';
-  ctx.fillText('FACE 2: CHILD GESTURE', 35, 55);
-
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '18px sans-serif';
-  ctx.fillText('Motion & Spatial Orientation', 35, 85);
-
-  // Active Gesture Display Box
-  ctx.fillStyle = 'rgba(6, 182, 212, 0.15)';
-  ctx.strokeStyle = 'rgba(6, 182, 212, 0.5)';
-  ctx.lineWidth = 3;
-  ctx.roundRect(35, 120, FACE_SIZE - 70, 180, 16);
-  ctx.fill();
-  ctx.stroke();
-
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 36px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.fillText(state.activeGesture, FACE_SIZE / 2, 195);
-
-  ctx.fillStyle = '#38bdf8';
-  ctx.font = '18px sans-serif';
-  ctx.fillText('Current Movement Intent', FACE_SIZE / 2, 235);
-
-  // Gesture motion trail illustration
-  ctx.textAlign = 'left';
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = 'bold 18px sans-serif';
-  ctx.fillText('SPATIAL IMU SENSORS:', 35, 340);
-
-  const gestures = [
-    { name: 'Wave / Push Away', desc: 'Need Space' },
-    { name: 'Forward Tilt', desc: 'Overwhelmed' },
-    { name: 'Side Rocking', desc: 'Self-Soothing' }
-  ];
-
-  gestures.forEach((g, i) => {
-    const isCur = g.desc === state.activeGesture;
-    ctx.fillStyle = isCur ? 'rgba(6, 182, 212, 0.4)' : 'rgba(255, 255, 255, 0.05)';
-    ctx.roundRect(35, 365 + (i * 42), FACE_SIZE - 70, 34, 8);
-    ctx.fill();
-
-    ctx.fillStyle = isCur ? '#38bdf8' : '#cbd5e1';
-    ctx.font = 'bold 15px sans-serif';
-    ctx.fillText(`${g.name} → ${g.desc}`, 50, 388 + (i * 42));
-  });
-}
-
-// Face 3: Back (-Z) -> Harmony / AI Clinician Negotiation
+// Face 5: Back (-Z) -> Face 4 Harmony / AI Clinician Negotiation Side
 function renderHarmonyFace(ctx) {
   ctx.fillStyle = '#0f172a';
   ctx.fillRect(0, 0, FACE_SIZE, FACE_SIZE);
@@ -305,9 +453,8 @@ function renderHarmonyFace(ctx) {
 
   ctx.fillStyle = '#94a3b8';
   ctx.font = '18px sans-serif';
-  ctx.fillText('Clinician Negotiation Engine', 35, 85);
+  ctx.fillText('Clinician Negotiation Step-In', 35, 85);
 
-  // Selected Compromise Card
   const comp = state.compromises.find(c => c.id === state.selectedCompromiseId) || state.compromises[0];
 
   ctx.fillStyle = 'rgba(16, 185, 129, 0.2)';
@@ -325,7 +472,6 @@ function renderHarmonyFace(ctx) {
   ctx.font = '17px sans-serif';
   wrapText(ctx, comp.desc, 55, 195, FACE_SIZE - 110, 24);
 
-  // Harmony Score Gauge
   ctx.fillStyle = '#94a3b8';
   ctx.font = 'bold 16px sans-serif';
   ctx.fillText('CO-REGULATION HARMONY METER:', 35, 360);
@@ -334,7 +480,6 @@ function renderHarmonyFace(ctx) {
   ctx.roundRect(35, 380, FACE_SIZE - 70, 28, 14);
   ctx.fill();
 
-  ctx.fillStyle = 'linear-gradient(90deg, #10b981, #06b6d4)';
   const barW = ((FACE_SIZE - 70) * comp.harmonyScore) / 100;
   ctx.fillStyle = '#10b981';
   ctx.roundRect(35, 380, barW, 28, 14);
@@ -348,100 +493,7 @@ function renderHarmonyFace(ctx) {
 
   ctx.fillStyle = '#6ee7b7';
   ctx.font = '14px sans-serif';
-  ctx.fillText('🤖 AI Mediation Protocol: OT Sensory Diet Compliant', 35, 450);
-}
-
-// Face 4: Top (+Y) -> Calming Sensory Output & Breathing Pacer
-function renderCalmOutputFace(ctx) {
-  ctx.fillStyle = '#091e3a';
-  ctx.fillRect(0, 0, FACE_SIZE, FACE_SIZE);
-
-  ctx.lineWidth = 14;
-  ctx.strokeStyle = '#38bdf8';
-  ctx.strokeRect(7, 7, FACE_SIZE - 14, FACE_SIZE - 14);
-
-  ctx.fillStyle = '#38bdf8';
-  ctx.font = 'bold 28px sans-serif';
-  ctx.fillText('FACE 5: CALMING OUTPUT', 35, 55);
-
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '18px sans-serif';
-  ctx.fillText('4-7-8 Breathing & Haptic Light', 35, 85);
-
-  // Glowing Orb Center
-  const centerX = FACE_SIZE / 2;
-  const centerY = 270;
-  const t = Date.now() * 0.002;
-  const pulse = Math.sin(t) * 0.25 + 0.75;
-  const rad = 110 * pulse;
-
-  const grad = ctx.createRadialGradient(centerX, centerY, 20, centerX, centerY, rad);
-  grad.addColorStop(0, '#ffffff');
-  grad.addColorStop(0.3, '#38bdf8');
-  grad.addColorStop(0.7, 'rgba(6, 182, 212, 0.4)');
-  grad.addColorStop(1, 'rgba(9, 30, 58, 0)');
-
-  ctx.fillStyle = grad;
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, rad, 0, Math.PI * 2);
-  ctx.fill();
-
-  ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 24px sans-serif';
-  ctx.textAlign = 'center';
-  const breathState = Math.sin(t) > 0 ? 'Breathe In...' : 'Gently Release...';
-  ctx.fillText(breathState, centerX, centerY + 8);
-
-  ctx.font = '16px sans-serif';
-  ctx.fillStyle = '#bae6fd';
-  ctx.fillText('Bioluminescent Haptic Feedback', centerX, 440);
-  ctx.textAlign = 'left';
-}
-
-// Face 5: Bottom (-Y) -> Classroom Sensory Context
-function renderClassroomContextFace(ctx) {
-  ctx.fillStyle = '#1e1b4b';
-  ctx.fillRect(0, 0, FACE_SIZE, FACE_SIZE);
-
-  ctx.lineWidth = 14;
-  ctx.strokeStyle = '#a855f7';
-  ctx.strokeRect(7, 7, FACE_SIZE - 14, FACE_SIZE - 14);
-
-  ctx.fillStyle = '#c084fc';
-  ctx.font = 'bold 28px sans-serif';
-  ctx.fillText('FACE 6: CLASSROOM CONTEXT', 35, 55);
-
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '18px sans-serif';
-  ctx.fillText('Sensory Environment Telemetry', 35, 85);
-
-  // Sensor metrics
-  const metrics = [
-    { label: 'Ambient Noise', val: `${state.noiseLevel} dB`, status: state.noiseLevel > 65 ? 'Elevated' : 'Normal', color: '#f59e0b' },
-    { label: 'Visual Stimulation', val: state.visualFlicker, status: 'Fluorescent Lighting', color: '#38bdf8' },
-    { label: 'Lesson Time Left', val: `${state.classTimeRemaining} Mins`, status: 'Math Worksheet', color: '#10b981' }
-  ];
-
-  metrics.forEach((m, idx) => {
-    const y = 130 + (idx * 105);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
-    ctx.roundRect(35, y, FACE_SIZE - 70, 85, 12);
-    ctx.fill();
-
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '16px sans-serif';
-    ctx.fillText(m.label, 55, y + 32);
-
-    ctx.fillStyle = m.color;
-    ctx.font = 'bold 24px sans-serif';
-    ctx.fillText(m.val, 55, y + 64);
-
-    ctx.fillStyle = '#cbd5e1';
-    ctx.font = '14px sans-serif';
-    ctx.textAlign = 'right';
-    ctx.fillText(m.status, FACE_SIZE - 55, y + 60);
-    ctx.textAlign = 'left';
-  });
+  ctx.fillText('🤖 AI Mediation: OT Sensory Diet Compliant', 35, 450);
 }
 
 function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
@@ -473,6 +525,7 @@ let currentRotation = { x: 0.3, y: -0.4 };
 
 function init3DScene() {
   const container = document.getElementById('cubeCanvasContainer');
+  if (!container) return;
   const width = container.clientWidth;
   const height = container.clientHeight || 500;
 
@@ -487,7 +540,6 @@ function init3DScene() {
   container.innerHTML = '';
   container.appendChild(renderer.domElement);
 
-  // Lighting
   const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
   scene.add(ambientLight);
 
@@ -499,17 +551,16 @@ function init3DScene() {
   dirLight2.position.set(-5, -5, -5);
   scene.add(dirLight2);
 
-  // Create 6 face materials with dynamic CanvasTextures
-  // Three.js BoxGeometry material face index order:
-  // [0: +X (Right), 1: -X (Left), 2: +Y (Top), 3: -Y (Bottom), 4: +Z (Front), 5: -Z (Back)]
   const materials = [];
+  // Three.js BoxGeometry material face order:
+  // [0: +X (Right), 1: -X (Left), 2: +Y (Top), 3: -Y (Bottom), 4: +Z (Front), 5: -Z (Back)]
   const renderFunctions = [
-    renderParentTextFace,      // 0: +X Right (Parent Text)
-    renderChildGestureFace,    // 1: -X Left (Child Gesture)
-    renderCalmOutputFace,      // 2: +Y Top (Calming Breathing Output)
-    renderClassroomContextFace,// 3: -Y Bottom (Classroom Telemetry)
-    renderChildTactileFace,    // 4: +Z Front (Child Tactile/Squeeze)
-    renderHarmonyFace          // 5: -Z Back (Harmony & AI Clinician)
+    renderParentTextFace,          // 0: +X Right -> Face 3: Parent Text
+    renderTranslationFace,         // 1: -X Left -> Face 2: Translation Face
+    renderBlankFace,               // 2: +Y Top -> Face 5: Blank
+    renderBlankFace,               // 3: -Y Bottom -> Face 6: Blank
+    renderChildTactileFace,        // 4: +Z Front -> Face 1: Child Tactile
+    renderHarmonyFace              // 5: -Z Back -> Face 4: Harmony / AI Negotiation
   ];
 
   for (let i = 0; i < 6; i++) {
@@ -529,19 +580,16 @@ function init3DScene() {
     }));
   }
 
-  // Rounded Box Geometry using BoxGeometry + bevel or standard geometry
   const geometry = new THREE.BoxGeometry(2.1, 2.1, 2.1);
   cubeMesh = new THREE.Mesh(geometry, materials);
   scene.add(cubeMesh);
 
-  // Ambient Floating Halo ring around cube
   const ringGeo = new THREE.TorusGeometry(2.2, 0.02, 16, 100);
   const ringMat = new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.4 });
   const ring = new THREE.Mesh(ringGeo, ringMat);
   ring.rotation.x = Math.PI / 2;
   cubeMesh.add(ring);
 
-  // Interaction handlers for rotation
   const domEl = renderer.domElement;
 
   domEl.addEventListener('mousedown', e => {
@@ -564,7 +612,6 @@ function init3DScene() {
     previousMousePosition = { x: e.clientX, y: e.clientY };
   });
 
-  // Touch Support
   domEl.addEventListener('touchstart', e => {
     if (e.touches.length === 1) {
       isDragging = true;
@@ -585,7 +632,6 @@ function init3DScene() {
     previousMousePosition = { x: e.touches[0].clientX, y: e.touches[0].clientY };
   });
 
-  // Resize handler
   window.addEventListener('resize', () => {
     if (!container) return;
     const w = container.clientWidth;
@@ -601,9 +647,9 @@ function init3DScene() {
 function updateFaceTextures() {
   const renderFunctions = [
     renderParentTextFace,
-    renderChildGestureFace,
-    renderCalmOutputFace,
-    renderClassroomContextFace,
+    renderTranslationFace,
+    renderBlankFace,
+    renderBlankFace,
     renderChildTactileFace,
     renderHarmonyFace
   ];
@@ -617,7 +663,6 @@ function updateFaceTextures() {
 function animate() {
   requestAnimationFrame(animate);
 
-  // Smooth rotation interpolation (damping)
   currentRotation.x += (targetRotation.x - currentRotation.x) * 0.08;
   currentRotation.y += (targetRotation.y - currentRotation.y) * 0.08;
 
@@ -626,11 +671,9 @@ function animate() {
     cubeMesh.rotation.y = currentRotation.y;
   }
 
-  // Update top breathing face dynamically for continuous animation
-  renderCalmOutputFace(faceCanvases[2].ctx);
-  faceTextures[2].needsUpdate = true;
-
-  renderer.render(scene, camera);
+  if (renderer && scene && camera) {
+    renderer.render(scene, camera);
+  }
 }
 
 // -------------------------------------------------------------
@@ -645,7 +688,6 @@ function snapToFace(faceId) {
     targetRotation.y = rot.y;
   }
 
-  // Update tab UI
   document.querySelectorAll('.facet-tab').forEach(tab => {
     if (tab.dataset.face === faceId) {
       tab.classList.add('active');
@@ -660,34 +702,17 @@ function snapToFace(faceId) {
 function handleSqueeze(delta) {
   state.sensoryPressure = Math.min(100, Math.max(5, state.sensoryPressure + delta));
   
-  // Recalculate AI suggestions if distress is very high
   if (state.sensoryPressure > 75) {
-    state.selectedCompromiseId = 3; // Shift to immediate decompression
+    state.selectedCompromiseId = 3;
   } else if (state.sensoryPressure > 45) {
-    state.selectedCompromiseId = 2; // Quiet corner
+    state.selectedCompromiseId = 2;
   } else {
-    state.selectedCompromiseId = 1; // In-desk
+    state.selectedCompromiseId = 1;
   }
 
   updateDOM();
   updateFaceTextures();
   playCalmTone(300 + state.sensoryPressure * 3, 'sine', 0.25);
-}
-
-function handleGestureSelect(gestureName) {
-  state.activeGesture = gestureName;
-  
-  if (gestureName === 'Emergency Exit') {
-    state.sensoryPressure = 90;
-    state.selectedCompromiseId = 3;
-  } else if (gestureName === 'Overwhelmed') {
-    state.sensoryPressure = 70;
-    state.selectedCompromiseId = 2;
-  }
-
-  updateDOM();
-  updateFaceTextures();
-  playCalmTone(620, 'sine', 0.3);
 }
 
 function handleParentSend(text) {
@@ -699,7 +724,10 @@ function handleParentSend(text) {
     time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   });
 
-  // AI Clinician instant co-regulation synthesis response
+  // Trigger gentle notification chime ("ding") and haptic rumble to inform child of incoming message
+  playDingSound();
+  playHapticRumble(0.5, 75);
+
   setTimeout(() => {
     let aiResponse = '';
     if (state.sensoryPressure > 70) {
@@ -721,7 +749,6 @@ function handleParentSend(text) {
 
   updateDOM();
   updateFaceTextures();
-  playCalmTone(700, 'sine', 0.2);
 }
 
 function selectCompromise(id) {
@@ -741,44 +768,43 @@ function triggerAgreement() {
 
   setTimeout(() => {
     toast.classList.remove('visible');
-  }, 4000);
+  }, 4500);
 
-  snapToFace('harmony-ai');
+  if (state.activeView === 'cube') {
+    snapToFace('harmony-ai');
+  }
 }
 
 function setScenario(scenarioKey) {
   state.currentScenario = scenarioKey;
   if (scenarioKey === 'math-test') {
     state.sensoryPressure = 65;
-    state.activeGesture = 'Need Space';
     state.noiseLevel = 54;
     state.visualFlicker = 'Low';
     state.classTimeRemaining = 12;
     state.messages = [
-      { sender: 'child', text: '🖐️ High pressure squeeze: Overwhelmed by timed math test', time: '10:14 AM' },
+      { sender: 'child', text: '🖐️ Squeezing at 65% ➔ Translated: "Math test pressure is overwhelming."', time: '10:14 AM' },
       { sender: 'parent', text: 'Can we try 3 more math questions before we step out?', time: '10:15 AM' },
       { sender: 'ai', text: '⚖️ Suggestion: 2-minute in-desk headphone reset, then complete 2 problems together.', time: '10:15 AM' }
     ];
   } else if (scenarioKey === 'group-work') {
     state.sensoryPressure = 85;
-    state.activeGesture = 'Overwhelmed';
     state.noiseLevel = 82;
     state.visualFlicker = 'High';
     state.classTimeRemaining = 25;
     state.messages = [
-      { sender: 'child', text: '🖐️ Max squeeze + Tilt Down: Too loud in classroom group station', time: '1:30 PM' },
+      { sender: 'child', text: '🖐️ Squeezing at 85% ➔ Translated: "Severe noise overload in group station."', time: '1:30 PM' },
       { sender: 'parent', text: 'Group project is due today, but I see you need quiet.', time: '1:31 PM' },
       { sender: 'ai', text: '⚖️ Suggestion: Move to sensory quiet corner for 5 mins; complete role asynchronously.', time: '1:31 PM' }
     ];
     state.selectedCompromiseId = 2;
   } else if (scenarioKey === 'recess-transition') {
     state.sensoryPressure = 35;
-    state.activeGesture = 'Self-Soothing';
     state.noiseLevel = 60;
     state.visualFlicker = 'Medium';
     state.classTimeRemaining = 5;
     state.messages = [
-      { sender: 'child', text: '🖐️ Gentle rhythm tapping: Preparing for noisy hallway transition', time: '2:45 PM' },
+      { sender: 'child', text: '🖐️ Squeezing at 35% ➔ Translated: "Preparing for noisy hallway transition."', time: '2:45 PM' },
       { sender: 'parent', text: 'Let’s leave 2 minutes before the bell rings.', time: '2:46 PM' }
     ];
     state.selectedCompromiseId = 1;
@@ -794,12 +820,13 @@ function setScenario(scenarioKey) {
 // -------------------------------------------------------------
 
 function updateDOM() {
-  // Update pressure bar
   const pressureFill = document.getElementById('pressureFill');
   const pressureVal = document.getElementById('pressureValue');
+  const calloutDistress = document.getElementById('calloutDistress');
   if (pressureFill && pressureVal) {
     pressureFill.style.width = `${state.sensoryPressure}%`;
     pressureVal.innerText = `${Math.round(state.sensoryPressure)}%`;
+    if (calloutDistress) calloutDistress.innerText = `${Math.round(state.sensoryPressure)}`;
 
     if (state.sensoryPressure > 75) {
       pressureFill.style.background = 'linear-gradient(90deg, #f59e0b, #ef4444)';
@@ -810,16 +837,17 @@ function updateDOM() {
     }
   }
 
-  // Update gesture chips
-  document.querySelectorAll('.chip-gesture').forEach(chip => {
-    if (chip.dataset.gesture === state.activeGesture) {
-      chip.classList.add('active');
-    } else {
-      chip.classList.remove('active');
-    }
-  });
+  // Translation Live Feed Updates
+  const trans = getSqueezeTranslation(state.sensoryPressure);
+  const transChildOutput = document.getElementById('transChildOutput');
+  const transDistressBadge = document.getElementById('transDistressBadge');
 
-  // Update chat history
+  if (transChildOutput) transChildOutput.innerText = trans.text;
+  if (transDistressBadge) {
+    transDistressBadge.innerText = trans.category;
+    transDistressBadge.style.color = trans.color;
+  }
+
   const chatHistory = document.getElementById('chatHistory');
   if (chatHistory) {
     chatHistory.innerHTML = state.messages.map(m => `
@@ -831,27 +859,36 @@ function updateDOM() {
     chatHistory.scrollTop = chatHistory.scrollHeight;
   }
 
-  // Update compromise list
-  const compList = document.getElementById('compromiseList');
-  if (compList) {
-    compList.innerHTML = state.compromises.map(c => `
-      <div class="compromise-item ${c.id === state.selectedCompromiseId ? 'selected' : ''}" onclick="selectCompromise(${c.id})">
-        <div class="compromise-title">
-          <span>${c.title}</span>
-          <span class="compromise-tag">${c.tag}</span>
+  const compDeck = document.getElementById('compromisesDeck');
+  if (compDeck) {
+    compDeck.innerHTML = state.compromises.map(c => `
+      <div class="compromise-card-lg ${c.id === state.selectedCompromiseId ? 'selected' : ''}" onclick="selectCompromise(${c.id})">
+        <div class="compromise-card-header">
+          <span class="compromise-tier-tag">${c.tag}</span>
+          <span style="font-size:0.8rem; color:#a7f3d0; font-weight:700;">⏱️ ${c.duration}</span>
         </div>
-        <div class="compromise-desc">${c.desc}</div>
+        <div class="compromise-card-title">${c.title}</div>
+        <div class="compromise-card-desc">${c.desc}</div>
+        <div class="compromise-meta-row">
+          <div class="compromise-meta-item">
+            <span>✨</span> Harmony Score: ${c.harmonyScore}%
+          </div>
+          <div style="font-size:0.75rem; color:#94a3b8; font-style:italic;">
+            ${c.rationale}
+          </div>
+        </div>
       </div>
     `).join('');
   }
 
-  // Update Harmony meter
-  const comp = state.compromises.find(c => c.id === state.selectedCompromiseId) || state.compromises[0];
-  const meterFill = document.getElementById('harmonyMeterFill');
-  const meterText = document.getElementById('harmonyScoreText');
-  if (meterFill && meterText) {
-    meterFill.style.width = `${comp.harmonyScore}%`;
-    meterText.innerText = `${comp.harmonyScore}% (High Co-Regulation)`;
+  const synthChild = document.getElementById('synthChildState');
+  if (synthChild) {
+    synthChild.innerHTML = `Tactile Force: <strong>${Math.round(state.sensoryPressure)}% (${state.sensoryPressure > 70 ? 'High Overload' : state.sensoryPressure > 40 ? 'Moderate Squeeze' : 'Gentle / Regulated'})</strong>. Non-verbal indicator: ${state.sensoryPressure > 70 ? 'High sympathetic nervous system load' : 'Manageable sensory demand'}.`;
+  }
+
+  const synthTrans = document.getElementById('synthTransState');
+  if (synthTrans) {
+    synthTrans.innerHTML = `Child Squeeze ➔ Text: <em>${trans.text}</em> &bull; Parent ➔ Child: <em>Vibration + Ding Notification Active</em>.`;
   }
 }
 
@@ -863,14 +900,12 @@ window.addEventListener('DOMContentLoaded', () => {
   init3DScene();
   updateDOM();
 
-  // Face navigation clicks
   document.querySelectorAll('.facet-tab').forEach(tab => {
     tab.addEventListener('click', () => {
       snapToFace(tab.dataset.face);
     });
   });
 
-  // Sound toggle button
   const soundBtn = document.getElementById('toggleSoundBtn');
   if (soundBtn) {
     soundBtn.addEventListener('click', () => {
@@ -880,7 +915,6 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Parent send button & enter key
   const parentInput = document.getElementById('parentInput');
   const parentSendBtn = document.getElementById('parentSendBtn');
   if (parentSendBtn && parentInput) {
@@ -896,7 +930,6 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Parent chip clicks
   document.querySelectorAll('.btn-chip').forEach(chip => {
     chip.addEventListener('click', () => {
       if (parentInput) {
@@ -906,7 +939,6 @@ window.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // Scenario select
   const scenarioSelect = document.getElementById('scenarioSelect');
   if (scenarioSelect) {
     scenarioSelect.addEventListener('change', e => {

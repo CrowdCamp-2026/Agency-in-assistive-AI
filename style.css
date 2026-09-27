@@ -10,6 +10,8 @@
   --accent-child-glow: rgba(6, 182, 212, 0.35);
   --accent-parent: #8b5cf6;     /* Thoughtful Violet */
   --accent-parent-glow: rgba(139, 92, 246, 0.35);
+  --accent-translation: #38bdf8; /* Translation Blue */
+  --accent-translation-glow: rgba(56, 189, 248, 0.35);
   --accent-harmony: #10b981;    /* Co-Regulation Emerald */
   --accent-harmony-glow: rgba(16, 185, 129, 0.4);
   --accent-caution: #f59e0b;    /* Sensory Warning Amber */
@@ -212,10 +214,10 @@ body {
 /* Layout Container for 3D Cube View */
 .main-container {
   display: grid;
-  grid-template-columns: 1fr 420px;
+  grid-template-columns: 1fr 430px;
   gap: 1.5rem;
   padding: 1.5rem 2rem;
-  max-width: 1700px;
+  max-width: 1750px;
   margin: 0 auto;
   min-height: calc(100vh - 80px);
 }
@@ -281,6 +283,11 @@ body {
   box-shadow: 0 0 12px var(--accent-child-glow);
 }
 
+.facet-tab.trans-tab.active {
+  background: var(--accent-translation-glow);
+  border-color: var(--accent-translation);
+}
+
 .facet-tab.parent-tab.active {
   background: var(--accent-parent-glow);
   border-color: var(--accent-parent);
@@ -324,11 +331,17 @@ body {
 /* Bottom Fast-Action Bar inside Workspace */
 .quick-control-bar {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: 1fr 1.3fr;
   gap: 1rem;
   padding: 1.25rem;
   background: rgba(10, 13, 20, 0.65);
   border-top: 1px solid var(--border-subtle);
+}
+
+@media (max-width: 900px) {
+  .quick-control-bar {
+    grid-template-columns: 1fr;
+  }
 }
 
 .quick-card {
@@ -419,31 +432,67 @@ body {
   color: #000;
 }
 
-/* Gesture Buttons */
-.gesture-chips {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.4rem;
+/* Translation Showcase Channels */
+.translation-showcase-box {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
 }
 
-.chip-gesture {
-  padding: 0.4rem 0.6rem;
-  background: rgba(255, 255, 255, 0.04);
+.trans-channel {
+  background: rgba(0, 0, 0, 0.3);
   border: 1px solid var(--border-subtle);
-  color: var(--text-secondary);
-  font-size: 0.75rem;
   border-radius: var(--radius-sm);
-  cursor: pointer;
+  padding: 0.6rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.trans-channel-label {
+  font-size: 0.7rem;
+  font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  transition: all 0.2s ease;
+  justify-content: space-between;
 }
 
-.chip-gesture:hover, .chip-gesture.active {
-  background: rgba(6, 182, 212, 0.2);
-  border-color: var(--accent-child);
-  color: var(--text-primary);
+.trans-channel-text {
+  font-size: 0.8rem;
+  color: #e2e8f0;
+  line-height: 1.35;
+}
+
+/* Haptic Vibration Waveform Simulator */
+.vibration-waveform {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  height: 20px;
+  margin-top: 2px;
+}
+
+.vibe-bar {
+  flex: 1;
+  height: 30%;
+  background: var(--accent-parent);
+  border-radius: 2px;
+  transition: height 0.1s ease;
+}
+
+.vibe-bar.pulsing {
+  animation: vibePulse 0.6s infinite ease-in-out alternate;
+}
+
+.vibe-bar:nth-child(2) { animation-delay: 0.1s; }
+.vibe-bar:nth-child(3) { animation-delay: 0.2s; }
+.vibe-bar:nth-child(4) { animation-delay: 0.3s; }
+.vibe-bar:nth-child(5) { animation-delay: 0.4s; }
+.vibe-bar:nth-child(6) { animation-delay: 0.5s; }
+
+@keyframes vibePulse {
+  0% { height: 20%; background: rgba(139, 92, 246, 0.4); }
+  100% { height: 100%; background: #a78bfa; box-shadow: 0 0 6px rgba(167, 139, 250, 0.8); }
 }
 
 /* Sidebar Dashboard Panel */
@@ -490,6 +539,12 @@ body {
   background: rgba(6, 182, 212, 0.15);
   color: var(--accent-child);
   border: 1px solid rgba(6, 182, 212, 0.3);
+}
+
+.badge-trans {
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--accent-translation);
+  border: 1px solid rgba(56, 189, 248, 0.3);
 }
 
 .badge-parent {
@@ -755,6 +810,7 @@ body {
 }
 
 .node-child { background: rgba(6, 182, 212, 0.2); border: 1px solid var(--accent-child); }
+.node-trans { background: rgba(56, 189, 248, 0.2); border: 1px solid var(--accent-translation); }
 .node-parent { background: rgba(139, 92, 246, 0.2); border: 1px solid var(--accent-parent); }
 .node-clinician { background: rgba(16, 185, 129, 0.2); border: 1px solid var(--accent-harmony); }
 
@@ -976,9 +1032,9 @@ body {
 }
 
 .facet-guide-card.child-border { border-top: 3px solid var(--accent-child); }
+.facet-guide-card.trans-border { border-top: 3px solid var(--accent-translation); }
 .facet-guide-card.parent-border { border-top: 3px solid var(--accent-parent); }
 .facet-guide-card.harmony-border { border-top: 3px solid var(--accent-harmony); }
-.facet-guide-card.calm-border { border-top: 3px solid #38bdf8; }
 
 .facet-guide-title {
   font-size: 0.95rem;
@@ -993,42 +1049,6 @@ body {
   font-size: 0.8rem;
   color: var(--text-secondary);
   line-height: 1.45;
-}
-
-/* Sensory Breathing Widget */
-.breathing-box {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  padding: 0.75rem;
-  background: rgba(0, 0, 0, 0.25);
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-subtle);
-}
-
-.breathing-orb {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  background: radial-gradient(circle, #38bdf8 0%, rgba(6, 182, 212, 0.2) 70%);
-  animation: breathe 8s infinite ease-in-out;
-  box-shadow: 0 0 15px rgba(56, 189, 248, 0.6);
-}
-
-@keyframes breathe {
-  0%, 100% { transform: scale(0.85); opacity: 0.5; }
-  50% { transform: scale(1.35); opacity: 1; filter: drop-shadow(0 0 12px #38bdf8); }
-}
-
-.breathing-text {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-}
-
-.breathing-text strong {
-  color: #38bdf8;
-  display: block;
-  font-size: 0.8rem;
 }
 
 /* Notification Toast */

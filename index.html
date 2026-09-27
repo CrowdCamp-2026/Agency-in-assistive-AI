@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HarmonyCube - Sensory Communication Cube for Neurodiverse Co-Regulation</title>
+  <title>HarmonyCube - Sensory Communication Cube for Neurodiverse Negotiation</title>
   <meta name="description" content="Tangible sensory communication cube prototype for autistic children and family members to negotiate classroom coping breaks and achieve communication harmony.">
   
   <!-- Google Fonts -->
@@ -72,23 +72,26 @@
         <div class="workspace-toolbar">
           <nav class="facet-nav" aria-label="Cube Faces Navigation">
             <button class="facet-tab active" data-face="child-tactile" id="tabChildTactile">
-              <span>🖐️</span> Face 1: Tactile
+              <span>🖐️</span> Face 1: Child Tactile
             </button>
-            <button class="facet-tab" data-face="child-gesture" id="tabChildGesture">
-              <span>👋</span> Face 2: Gesture
+            <button class="facet-tab trans-tab" data-face="translation-face" id="tabTranslationFace">
+              <span>🔄</span> Face 2: Translation
             </button>
             <button class="facet-tab parent-tab" data-face="parent-text" id="tabParentText">
-              <span>💬</span> Face 3: Parent
+              <span>💬</span> Face 3: Parent Text
             </button>
             <button class="facet-tab harmony-tab" data-face="harmony-ai" id="tabHarmonyAI">
-              <span>⚖️</span> Face 4: Harmony
+              <span>⚖️</span> Face 4: Harmony / AI
             </button>
-            <button class="facet-tab" data-face="calm-output" id="tabCalmOutput">
-              <span>✨</span> Face 5: Calming
+            <!-- Face 5 and Face 6 commented out for now -->
+            <!--
+            <button class="facet-tab" data-face="clinician-protocol" id="tabClinicianProtocol">
+              <span>📋</span> Face 5: Clinician Protocol
             </button>
             <button class="facet-tab" data-face="classroom-context" id="tabClassroomContext">
-              <span>🏫</span> Face 6: Context
+              <span>🏫</span> Face 6: Classroom Context
             </button>
+            -->
           </nav>
         </div>
 
@@ -103,10 +106,10 @@
 
         <!-- Bottom Interactive Simulators -->
         <div class="quick-control-bar">
-          <!-- Child Squeeze / Pressure Simulator -->
+          <!-- Child Squeeze / Pressure Simulator (Face 1) -->
           <div class="quick-card">
             <div class="quick-card-header">
-              <span style="color:var(--accent-child)">🖐️ Child Tactile Squeeze</span>
+              <span style="color:var(--accent-child)">🖐️ Face 1: Child Squeeze Pad</span>
               <span id="pressureValue" style="color:var(--accent-child); font-weight:700;">45%</span>
             </div>
             <div class="squeeze-interactive">
@@ -125,37 +128,38 @@
             </div>
           </div>
 
-          <!-- Child Gesture Sensor Simulator -->
-          <div class="quick-card">
+          <!-- Face 2: Bidirectional Translation Showcase -->
+          <div class="quick-card" style="border-color: rgba(56, 189, 248, 0.3);">
             <div class="quick-card-header">
-              <span style="color:var(--accent-child)">👋 Child Gesture Sensor</span>
+              <span style="color:var(--accent-translation)">🔄 Face 2: Bidirectional Translation Engine</span>
+              <span class="badge-role badge-trans">Live Process</span>
             </div>
-            <div class="gesture-chips">
-              <button class="chip-gesture active" data-gesture="Need Space" onclick="handleGestureSelect('Need Space')">
-                ✋ Need Space
-              </button>
-              <button class="chip-gesture" data-gesture="Overwhelmed" onclick="handleGestureSelect('Overwhelmed')">
-                📉 Overwhelmed
-              </button>
-              <button class="chip-gesture" data-gesture="Self-Soothing" onclick="handleGestureSelect('Self-Soothing')">
-                🔄 Rocking / Calm
-              </button>
-              <button class="chip-gesture" data-gesture="Emergency Exit" onclick="handleGestureSelect('Emergency Exit')">
-                🚨 Emergency Exit
-              </button>
-            </div>
-          </div>
+            <div class="translation-showcase-box">
+              <!-- Channel A: Child Squeeze -> Text -->
+              <div class="trans-channel">
+                <div class="trans-channel-label" style="color:var(--accent-child);">
+                  <span>🖐️ Squeeze Force ➔ Parent Text:</span>
+                  <span id="transDistressBadge" style="font-weight:700;">Moderate Overload</span>
+                </div>
+                <div class="trans-channel-text" id="transChildOutput">
+                  "I am feeling elevated noise tension and need a short break."
+                </div>
+              </div>
 
-          <!-- Sensory Breathing Feedback -->
-          <div class="quick-card">
-            <div class="quick-card-header">
-              <span style="color:var(--accent-child)">✨ Haptic &amp; Breathing Pacer</span>
-            </div>
-            <div class="breathing-box">
-              <div class="breathing-orb"></div>
-              <div class="breathing-text">
-                <strong>4-7-8 Breathing Pacer</strong>
-                Visual bioluminescent sync
+              <!-- Channel B: Parent Text -> Child Vibration -->
+              <div class="trans-channel">
+                <div class="trans-channel-label" style="color:var(--accent-parent);">
+                  <span>💬 Parent Text ➔ Child Vibration:</span>
+                  <span id="vibePatternName" style="color:#c084fc; font-weight:700;">Dual Calming Wave (80Hz)</span>
+                </div>
+                <div class="vibration-waveform" id="vibeWaveform" title="Haptic Vibration Motor Feed">
+                  <div class="vibe-bar pulsing"></div>
+                  <div class="vibe-bar pulsing"></div>
+                  <div class="vibe-bar pulsing"></div>
+                  <div class="vibe-bar pulsing"></div>
+                  <div class="vibe-bar pulsing"></div>
+                  <div class="vibe-bar pulsing"></div>
+                </div>
               </div>
             </div>
           </div>
@@ -171,7 +175,7 @@
             <h2 id="parentSectionTitle" class="card-title">
               <span>💬</span> Parent Communication
             </h2>
-            <span class="badge-role badge-parent">Face 3</span>
+            <span class="badge-role badge-parent">Face 3: Text Input</span>
           </div>
 
           <div class="parent-composer">
@@ -198,10 +202,10 @@
         <!-- Quick Harmony Status & Tab Link Card -->
         <div class="harmony-callout-card">
           <h3>
-            <span>⚖️</span> AI / Clinician Negotiation Ready
+            <span>⚖️</span> Face 4: Harmony Negotiation
           </h3>
           <p style="font-size:0.8rem; color:#cbd5e1; line-height:1.4;">
-            The AI mediator has synthesized the child's tactile distress ($<span id="calloutDistress">45</span>%$) and parent input into 3 win-win compromises.
+            The AI / Clinician negotiation side has synthesized the child's tactile distress (<span id="calloutDistress">45</span>%) and parent text into 3 calibrated compromise choices.
           </p>
           <button class="btn-open-harmony-tab" onclick="switchView('harmony')">
             <span>Open Negotiation &amp; Reach Harmony →</span>
@@ -220,10 +224,10 @@
     <div class="harmony-dedicated-view">
       
       <div class="harmony-header-hero">
-        <div class="harmony-hero-badge">⚖️ Face 4: Co-Regulation Mediation Engine</div>
+        <div class="harmony-hero-badge">⚖️ Face 4: Co-Regulation Negotiation Side</div>
         <h2 class="harmony-hero-title">AI &amp; Clinician Negotiation Hub</h2>
         <p class="harmony-hero-desc">
-          When verbal negotiation during sensory overload leads to shutdown, the Harmony Engine combines non-verbal tactile stress, parent priorities, and clinical OT/BCBA protocols to build fair, calibrated compromise options.
+          When negotiating whether to leave the classroom during high sensory load, the Harmony Engine combines non-verbal tactile stress, translated cues, and parent priorities to build fair, calibrated compromise options.
         </p>
       </div>
 
@@ -234,7 +238,7 @@
             <span>🔄</span> Multi-Source Co-Regulation Inputs
           </h3>
           <p style="font-size:0.8rem; color:var(--text-secondary);">
-            Real-time telemetry gathered across the cube facets:
+            Real-time telemetry gathered across active cube facets:
           </p>
 
           <div class="input-synthesis-stream">
@@ -242,34 +246,47 @@
             <div class="synthesis-node">
               <div class="node-icon node-child">🖐️</div>
               <div>
-                <div class="node-title">Child Sensory Distress (Face 1 &amp; 2)</div>
+                <div class="node-title">Child Input (Face 1: Tactile Squeeze)</div>
                 <div class="node-desc" id="synthChildState">
-                  Tactile Force: <strong>45% (Moderate Squeeze)</strong> &bull; Active Gesture: <strong>Need Space</strong>. Non-verbal indicator: Elevated sympathetic nervous system load.
+                  Tactile Force: <strong>45% (Moderate Squeeze)</strong>. Non-verbal indicator: Elevated sympathetic nervous system load.
                 </div>
               </div>
             </div>
 
-            <!-- Node 2: Parent Perspective -->
+            <!-- Node 2: Translation Stream -->
+            <div class="synthesis-node">
+              <div class="node-icon node-trans">🔄</div>
+              <div>
+                <div class="node-title">Translation Engine (Face 2: Bidirectional Bridge)</div>
+                <div class="node-desc" id="synthTransState">
+                  Child Squeeze ➔ Text: <em>"Overload rising, need break"</em> &bull; Parent Text ➔ Child: <em>Vibration Pulse Pattern Active</em>.
+                </div>
+              </div>
+            </div>
+
+            <!-- Node 3: Parent Perspective -->
             <div class="synthesis-node">
               <div class="node-icon node-parent">💬</div>
               <div>
-                <div class="node-title">Parent Perspective (Face 3)</div>
+                <div class="node-title">Parent Input (Face 3: Text)</div>
                 <div class="node-desc" id="synthParentState">
                   Goal: Complete timed math test or maintain learning continuity, but willing to offer sensory buffer tools (headphones, micro-break).
                 </div>
               </div>
             </div>
 
-            <!-- Node 3: Clinical Protocol -->
+            <!-- Node 4 (Face 5 Clinician Protocol) commented out for now -->
+            <!--
             <div class="synthesis-node">
               <div class="node-icon node-clinician">📋</div>
               <div>
-                <div class="node-title">OT / BCBA Coping Strategy Protocol</div>
+                <div class="node-title">Clinician Protocol (Face 5)</div>
                 <div class="node-desc">
-                  Sensory Diet Tiering: Prioritize autonomy, provide time-bounded predictability, and prevent complete shutdown by offering a ladder of micro-resets.
+                  Sensory Diet Tiering: Prioritize autonomy, provide time-bounded predictability, and prevent complete shutdown.
                 </div>
               </div>
             </div>
+            -->
           </div>
         </div>
 
@@ -277,7 +294,7 @@
         <div class="tripartite-synthesis-card" style="border-color: rgba(16, 185, 129, 0.3);">
           <div class="card-title-row">
             <h3 style="font-size:1.1rem; color:#34d399; display:flex; align-items:center; gap:0.5rem;">
-              <span>🤝</span> AI-Generated Compromise Options
+              <span>🤝</span> AI / Clinician Step-In Compromises
             </h3>
             <span class="badge-role badge-harmony">Clinician Calibrated</span>
           </div>
@@ -305,7 +322,7 @@
       <div class="guide-hero">
         <h2>📖 Accessible Guide: How HarmonyCube Works</h2>
         <p>
-          A step-by-step, plain-language guide for autistic individuals, parents, teachers, and clinicians to achieve communication harmony without verbal stress.
+          A step-by-step, plain-language guide showcasing the bidirectional translation and negotiation process between autistic children and family members.
         </p>
       </div>
 
@@ -315,48 +332,48 @@
         <!-- Step 1 -->
         <div class="step-card">
           <div class="step-number">1</div>
-          <h3 class="step-title">Express Without Words</h3>
+          <h3 class="step-title">Child Squeezes Pad (Face 1)</h3>
           <p class="step-plain-text">
-            During sensory overload or stress, talking can be exhausting. The student simply <strong>squeezes the tactile pad (Face 1)</strong> or uses a <strong>gentle gesture (Face 2)</strong> to show how overwhelmed they feel.
+            During sensory overload or stress, the student simply <strong>squeezes the tactile pad (Face 1)</strong>. No spoken words required.
           </p>
           <div class="step-action-box">
-            <strong>Action:</strong> Squeeze the pad to show distress level from 0% (calm) to 100% (urgent break needed).
+            <strong>Action:</strong> Squeeze force conveys overload level from 0% (calm) to 100% (urgent break needed).
           </div>
         </div>
 
         <!-- Step 2 -->
         <div class="step-card">
           <div class="step-number">2</div>
-          <h3 class="step-title">Parent Sends Gentle Cues</h3>
+          <h3 class="step-title">Translation to Parent Text (Face 2 ➔ Face 3)</h3>
           <p class="step-plain-text">
-            Parents or aides type supportive messages or choose quick empathetic chips on <strong>Face 3</strong>, avoiding high-pressure spoken demands.
+            <strong>Face 2 converts the physical squeeze into clear, supportive text</strong> for the parent's device (*"I am overwhelmed and need a break"*).
           </p>
           <div class="step-action-box">
-            <strong>Action:</strong> Send suggestions like <em>"Try headphones first?"</em> or <em>"Finish 2 problems then quiet break?"</em>
+            <strong>Action:</strong> Parent sees quantified distress without misunderstanding or guessing.
           </div>
         </div>
 
         <!-- Step 3 -->
         <div class="step-card">
           <div class="step-number">3</div>
-          <h3 class="step-title">AI &amp; Clinician Mediate</h3>
+          <h3 class="step-title">Parent Text Converts to Child Vibration (Face 3 ➔ Face 2)</h3>
           <p class="step-plain-text">
-            The <strong>Harmony Engine (Face 4)</strong> blends the student's sensory urgency with the learning goals to suggest 3 fair compromise choices based on occupational therapy protocols.
+            When the parent sends a text message, <strong>Face 2 translates the text into gentle haptic vibration patterns</strong> on the child's cube.
           </p>
           <div class="step-action-box">
-            <strong>Action:</strong> Select a compromise that both child and parent feel comfortable with.
+            <strong>Action:</strong> The child physically feels reassurance (e.g. gentle double pulse) without auditory pressure.
           </div>
         </div>
 
         <!-- Step 4 -->
         <div class="step-card">
           <div class="step-number">4</div>
-          <h3 class="step-title">Sensory Co-Regulation</h3>
+          <h3 class="step-title">AI Clinician Mediation (Face 4)</h3>
           <p class="step-plain-text">
-            Once agreed, the cube pulses with a <strong>calming breathing light (Face 5)</strong> and soothing harmonic tones to help everyone reset together peacefully.
+            The <strong>Harmony Negotiation Side (Face 4)</strong> balances the student's distress with the learning goals, proposing 3 fair compromise choices.
           </p>
           <div class="step-action-box">
-            <strong>Action:</strong> Breathe with the glowing orb (4-7-8 rhythm) as the coping break begins.
+            <strong>Action:</strong> Both sides agree on a compromise and initiate the coping break.
           </div>
         </div>
 
@@ -364,7 +381,7 @@
 
       <!-- Facet Matrix Guide -->
       <h3 style="font-family:var(--font-display); font-size:1.4rem; margin-top:1.5rem;">
-        🎲 6 Cube Facets at a Glance
+        🎲 Active Cube Facets
       </h3>
 
       <div class="facet-guide-matrix">
@@ -372,44 +389,47 @@
         <div class="facet-guide-card child-border">
           <div class="facet-guide-title"><span>🖐️</span> Face 1: Child Tactile Pad</div>
           <p class="facet-guide-desc">
-            Equipped with continuous pressure sensors and ribbed silicone textures. Allows the child to squeeze to quantify stress without forcing spoken words.
+            Continuous pressure sensors and ribbed tactile textures. Squeezing communicates distress level without forcing speech.
           </p>
         </div>
 
-        <div class="facet-guide-card child-border">
-          <div class="facet-guide-title"><span>👋</span> Face 2: Child Spatial Gestures</div>
+        <div class="facet-guide-card trans-border">
+          <div class="facet-guide-title"><span>🔄</span> Face 2: Bidirectional Translation Face</div>
           <p class="facet-guide-desc">
-            Spatial IMU sensors recognize natural body movements: <em>Push Away</em> ("Need Space"), <em>Forward Tilt</em> ("Overwhelmed"), <em>Rocking</em> ("Self-Soothing").
+            Translates <strong>Child Squeeze ➔ Parent Text</strong> and translates <strong>Parent Text ➔ Child Haptic Vibration Patterns</strong>.
           </p>
         </div>
 
         <div class="facet-guide-card parent-border">
-          <div class="facet-guide-title"><span>💬</span> Face 3: Parent Text &amp; Cues</div>
+          <div class="facet-guide-title"><span>💬</span> Face 3: Parent Text Input</div>
           <p class="facet-guide-desc">
-            Low-stimulation text interface for family members to send considerate messages and micro-break proposals quietly from their phone or tablet.
+            Low-stimulation text interface for family members to send considerate messages and micro-break proposals quietly.
           </p>
         </div>
 
         <div class="facet-guide-card harmony-border">
-          <div class="facet-guide-title"><span>⚖️</span> Face 4: Harmony / AI Clinician</div>
+          <div class="facet-guide-title"><span>⚖️</span> Face 4: Harmony / Negotiation Side</div>
           <p class="facet-guide-desc">
-            Calculates win-win compromises using tripartite balancing: Sensory Distress + Task Goals + Occupational Therapy Sensory Diet guidelines.
+            AI or clinician negotiation step-in that balances child sensory distress, parent text, and classroom goals into 3 compromise options.
           </p>
         </div>
 
-        <div class="facet-guide-card calm-border">
-          <div class="facet-guide-title"><span>✨</span> Face 5: Calming Output</div>
+        <!-- Faces 5 and 6 commented out for now -->
+        <!--
+        <div class="facet-guide-card" style="border-top: 3px solid #34d399;">
+          <div class="facet-guide-title"><span>📋</span> Face 5: Clinician Protocol</div>
           <p class="facet-guide-desc">
-            Bioluminescent 4-7-8 breathing pacer with soft haptic micro-vibrations and harmonic sound feedback for physiological down-regulation.
+            OT / BCBA sensory diet guidelines.
           </p>
         </div>
 
         <div class="facet-guide-card">
           <div class="facet-guide-title"><span>🏫</span> Face 6: Classroom Context</div>
           <p class="facet-guide-desc">
-            Monitors environmental load: ambient noise in decibels (dB), visual fluorescent flicker, and remaining lesson time countdown.
+            Monitors environmental load.
           </p>
         </div>
+        -->
 
       </div>
 
