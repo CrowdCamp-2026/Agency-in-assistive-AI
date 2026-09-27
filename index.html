@@ -3,66 +3,1119 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hello World</title>
+  <title>HarmoniToy — AI-Mediated Collaborative Personalization</title>
   <style>
-    body {
+    :root {
+      --bg-primary: #0f141c;
+      --bg-secondary: #18202d;
+      --card-bg: #1e2838;
+      --card-border: #2e3e56;
+      --text-main: #f0f4f8;
+      --text-muted: #94a3b8;
+      --accent-child: #f59e0b;
+      --accent-parent: #38bdf8;
+      --accent-clinician: #34d399;
+      --accent-ai: #a855f7;
+      --accent-danger: #f43f5e;
+      --accent-toy-glow: rgba(245, 158, 11, 0.4);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 1.25rem 2rem;
+      gap: 1.25rem;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-secondary);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+    }
+
+    .header-left h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .header-left h1 span.badge {
+      background: linear-gradient(135deg, #a855f7, #6366f1);
+      font-size: 0.72rem;
+      padding: 0.2rem 0.6rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .header-left p {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-top: 0.2rem;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .scenario-pill {
+      background: rgba(244, 63, 94, 0.15);
+      border: 1px solid var(--accent-danger);
+      color: #fda4af;
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 0.45rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .btn:hover {
+      background: #2a384e;
+      border-color: #475d80;
+    }
+    .btn.active {
+      background: var(--accent-ai);
+      border-color: #c084fc;
+      color: white;
+    }
+
+    /* Main Grid Layout */
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 1.1fr 1.9fr;
+      gap: 1.25rem;
+      flex: 1;
+    }
+
+    /* Left: Digital Twin Tangible Toy */
+    .toy-panel {
+      background: var(--bg-secondary);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .toy-panel-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .toy-panel-header h2 {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    /* The Interactive Toy Canvas / Object */
+    .toy-stage {
+      position: relative;
+      width: 260px;
+      height: 260px;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
-      margin: 0;
-      background-color: #f7f9fc;
-      color: #333;
+      margin: 1.5rem 0;
     }
-    .container {
-      text-align: center;
+
+    .toy-aura {
+      position: absolute;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--accent-toy-glow) 0%, rgba(0,0,0,0) 70%);
+      transition: all 0.3s ease;
+      filter: blur(20px);
+      pointer-events: none;
+    }
+
+    .toy-creature {
+      width: 170px;
+      height: 170px;
+      background: linear-gradient(145deg, #3b4252, #2e3440);
+      border-radius: 60% 40% 70% 30% / 50% 60% 40% 50%;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      box-shadow: inset -6px -6px 16px rgba(0,0,0,0.5), inset 6px 6px 16px rgba(255,255,255,0.1), 0 10px 30px rgba(0,0,0,0.5);
+      cursor: grab;
+      position: relative;
+      transition: transform 0.08s ease, border-radius 0.4s ease, background 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      touch-action: none;
+    }
+    .toy-creature:active {
+      cursor: grabbing;
+    }
+
+    .toy-face {
+      display: flex;
+      gap: 28px;
+      margin-bottom: 8px;
+    }
+    .toy-eye {
+      width: 12px;
+      height: 12px;
       background: #ffffff;
-      padding: 2.5rem;
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(255,255,255,0.8);
+      transition: height 0.2s;
+    }
+    .toy-heartbeat {
+      font-size: 0.7rem;
+      color: rgba(255,255,255,0.7);
+      margin-top: 4px;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    /* Sensor Metrics & Controls */
+    .sensor-readouts {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 10px;
+      padding: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .sensor-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.3rem;
+    }
+    .sensor-row-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.78rem;
+      color: var(--text-muted);
+    }
+    .progress-bar-bg {
+      height: 6px;
+      background: #232c3d;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent-child);
+      border-radius: 4px;
+      transition: width 0.08s linear, background-color 0.3s;
+    }
+
+    .sensor-instructions {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      text-align: center;
+      line-height: 1.35;
+      background: rgba(255,255,255,0.03);
+      padding: 0.45rem;
+      border-radius: 6px;
+    }
+    .sensor-instructions strong {
+      color: #cbd5e1;
+    }
+
+    /* Right: Tri-Stakeholder & AI Mediator */
+    .collab-engine {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    /* Step Timeline Flow */
+    .timeline-bar {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.5rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 0.5rem;
+    }
+    .timeline-step {
+      padding: 0.45rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      font-weight: 500;
+      text-align: center;
+      cursor: pointer;
+      background: rgba(255,255,255,0.03);
+      color: var(--text-muted);
+      border: 1px solid transparent;
+      transition: all 0.2s;
+    }
+    .timeline-step.active {
+      background: rgba(168, 85, 247, 0.15);
+      border-color: var(--accent-ai);
+      color: #e9d5ff;
+      font-weight: 600;
+    }
+
+    /* Tri-Stakeholder 3-Card Grid */
+    .stakeholders-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.85rem;
+    }
+
+    .stakeholder-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+    .stakeholder-card.child { border-top: 3px solid var(--accent-child); }
+    .stakeholder-card.parent { border-top: 3px solid var(--accent-parent); }
+    .stakeholder-card.clinician { border-top: 3px solid var(--accent-clinician); }
+
+    .card-title-row {
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      margin-bottom: 0.5rem;
+    }
+    .card-title-row h3 {
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    .badge-role {
+      font-size: 0.68rem;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+    .child .badge-role { background: rgba(245, 158, 11, 0.2); color: var(--accent-child); }
+    .parent .badge-role { background: rgba(56, 189, 248, 0.2); color: var(--accent-parent); }
+    .clinician .badge-role { background: rgba(52, 211, 153, 0.2); color: var(--accent-clinician); }
+
+    .perspective-quote {
+      background: rgba(0,0,0,0.2);
+      border-left: 2px solid;
+      padding: 0.5rem;
+      border-radius: 0 6px 6px 0;
+      font-size: 0.78rem;
+      line-height: 1.4;
+      margin: 0.4rem 0 0.75rem 0;
+      font-style: italic;
+    }
+    .child .perspective-quote { border-color: var(--accent-child); color: #fde68a; }
+    .parent .perspective-quote { border-color: var(--accent-parent); color: #bae6fd; }
+    .clinician .perspective-quote { border-color: var(--accent-clinician); color: #a7f3d0; }
+
+    .key-criteria {
+      list-style: none;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      margin-bottom: 0.75rem;
+    }
+    .key-criteria li {
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .key-criteria li span.icon { font-size: 0.85rem; }
+
+    /* Interactive AAC / Stakeholder Vote */
+    .stakeholder-action {
+      background: rgba(255,255,255,0.03);
+      padding: 0.6rem;
+      border-radius: 8px;
+      font-size: 0.76rem;
+    }
+    .aac-buttons {
+      display: flex;
+      gap: 0.35rem;
+      margin-top: 0.4rem;
+    }
+    .aac-btn {
+      flex: 1;
+      padding: 0.35rem 0.2rem;
+      font-size: 0.7rem;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      border-radius: 6px;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+    .aac-btn:hover {
+      background: #2b394f;
+      border-color: #64748b;
+    }
+    .aac-btn.active {
+      background: var(--accent-child);
+      color: #000;
+      font-weight: 700;
+      border-color: #fbbf24;
+    }
+
+    .approval-check {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.76rem;
+      margin-top: 0.4rem;
+    }
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 20px;
+    }
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #334155;
+      transition: .3s;
+      border-radius: 20px;
+    }
+    .slider:before {
+      position: absolute; content: ""; height: 14px; width: 14px; left: 3px; bottom: 3px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+    input:checked + .slider { background-color: #10b981; }
+    input:checked + .slider:before { transform: translateX(16px); }
+
+    /* Bottom: The AI Multi-Stakeholder Mediation Engine */
+    .mediation-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--card-border);
       border-radius: 12px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+      position: relative;
+      overflow: hidden;
     }
-    h1 {
-      margin-bottom: 1.5rem;
-      font-size: 2rem;
+    .mediation-card::before {
+      content: "";
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--accent-child), var(--accent-ai), var(--accent-parent), var(--accent-clinician));
     }
-    button {
-      background-color: #0070f3;
+
+    .mediation-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .mediation-header h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.45rem;
+      color: #e9d5ff;
+    }
+
+    .negotiation-synthesis {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0.75rem;
+    }
+    .synthesis-box {
+      background: rgba(168, 85, 247, 0.08);
+      border: 1px solid rgba(168, 85, 247, 0.25);
+      border-radius: 8px;
+      padding: 0.75rem;
+    }
+    .synthesis-box h4 {
+      font-size: 0.8rem;
+      color: #d8b4fe;
+      margin-bottom: 0.35rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+    .synthesis-box p {
+      font-size: 0.74rem;
+      color: #cbd5e1;
+      line-height: 1.4;
+    }
+
+    .consensus-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(0,0,0,0.25);
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+    }
+    .consensus-status {
+      font-size: 0.82rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-deploy {
+      background: linear-gradient(135deg, #9333ea, #6366f1);
       color: white;
       border: none;
-      padding: 0.75rem 1.5rem;
-      font-size: 1rem;
-      font-weight: 500;
+      padding: 0.6rem 1.4rem;
       border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
       cursor: pointer;
-      transition: background-color 0.2s ease, transform 0.1s ease;
+      box-shadow: 0 4px 14px rgba(147, 51, 234, 0.4);
+      transition: all 0.2s;
     }
-    button:hover {
-      background-color: #005bb5;
+    .btn-deploy:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(147, 51, 234, 0.6);
     }
-    button:active {
-      transform: scale(0.98);
+
+    /* Live Voice/Mic Banner */
+    .mic-banner {
+      font-size: 0.72rem;
+      color: #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
     }
-    #message {
-      margin-top: 1.25rem;
-      font-size: 1.1rem;
-      font-weight: 500;
-      color: #0070f3;
-      min-height: 1.5em;
+
+    @media (max-width: 1024px) {
+      .dashboard-layout {
+        grid-template-columns: 1fr;
+      }
+      .stakeholders-grid {
+        grid-template-columns: 1fr;
+      }
+      .negotiation-synthesis {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Hello, World!</h1>
-    <button id="btn" onclick="handleClick()">Click Me</button>
-    <div id="message"></div>
-  </div>
+
+  <!-- Header -->
+  <header>
+    <div class="header-left">
+      <h1>
+        HarmoniToy <span class="badge">ACM CI • CrowdCamp 2026</span>
+      </h1>
+      <p>AI-Mediated Collaborative Personalization for Tangible Assistive Sensory Interaction</p>
+    </div>
+    <div class="header-right">
+      <div class="scenario-pill">
+        <span>🌙</span> Scenario: Bedtime Sensory Overload vs. Sleep Routine (9:15 PM)
+      </div>
+      <button class="btn" id="soundBtn" onclick="toggleAudioEngine()">
+        <span>🔊</span> Soundscape: <strong id="soundState">Off</strong>
+      </button>
+      <button class="btn" id="micBtn" onclick="toggleMic()">
+        <span>🎙️</span> Mic Input: <strong id="micState">Off</strong>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Grid -->
+  <main class="dashboard-layout">
+
+    <!-- LEFT: Digital Twin Sensory Toy -->
+    <section class="toy-panel">
+      <div class="toy-panel-header">
+        <h2>Tangible Sensory Companion ("Pebble")</h2>
+        <div class="status-indicator">
+          <span class="dot" id="systemStatusDot"></span>
+          <span id="systemStatusText">Awaiting Pressure Input</span>
+        </div>
+      </div>
+
+      <!-- Center Creature Representation -->
+      <div class="toy-stage" id="toyStage">
+        <div class="toy-aura" id="toyAura"></div>
+        <div class="toy-creature" id="creature"
+             onpointerdown="handlePointerDown(event)"
+             onpointermove="handlePointerMove(event)"
+             onpointerup="handlePointerUp(event)"
+             onpointercancel="handlePointerUp(event)">
+          <div class="toy-face">
+            <div class="toy-eye" id="eyeLeft"></div>
+            <div class="toy-eye" id="eyeRight"></div>
+          </div>
+          <div class="toy-heartbeat" id="rhythmText">60 BPM SOOTHING</div>
+        </div>
+      </div>
+
+      <!-- Live Sensors Readout -->
+      <div class="sensor-readouts">
+        <!-- Force Touch Pressure -->
+        <div class="sensor-row">
+          <div class="sensor-row-header">
+            <span>Force Touch Trackpad (Tactile Squeeze)</span>
+            <span id="forceValue">0% (Gentle)</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="forceBar"></div>
+          </div>
+        </div>
+
+        <!-- Acoustic / Blowing -->
+        <div class="sensor-row">
+          <div class="sensor-row-header">
+            <span>Mic Acoustic / Sigh / Blowing Level</span>
+            <span id="acousticValue">0 dB</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="acousticBar" style="background: var(--accent-parent);"></div>
+          </div>
+        </div>
+
+        <!-- Proprioceptive Output Level -->
+        <div class="sensor-row">
+          <div class="sensor-row-header">
+            <span>Toy Vibration / Haptic Resonance</span>
+            <span id="hapticValue">Idle</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="hapticBar" style="background: var(--accent-ai);"></div>
+          </div>
+        </div>
+
+        <div class="sensor-instructions">
+          <strong>MacBook Tip:</strong> Actually press hard down on your trackpad to simulate an autistic child squeezing the toy for proprioceptive regulation!
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: Collaborative Deliberation & AI Mediation Engine -->
+    <section class="collab-engine">
+
+      <!-- Scenario Stepper -->
+      <div class="timeline-bar">
+        <div class="timeline-step active" id="step1" onclick="setPhase(1)">1. Initial Conflict</div>
+        <div class="timeline-step" id="step2" onclick="setPhase(2)">2. Voice Triangulation</div>
+        <div class="timeline-step" id="step3" onclick="setPhase(3)">3. AI Mediated Proposal</div>
+        <div class="timeline-step" id="step4" onclick="setPhase(4)">4. Collective Consensus</div>
+      </div>
+
+      <!-- 3 Stakeholder Lenses Grid -->
+      <div class="stakeholders-grid">
+
+        <!-- Stakeholder 1: Child -->
+        <div class="stakeholder-card child">
+          <div>
+            <div class="card-title-row">
+              <span style="font-size: 1.2rem;">🧒</span>
+              <h3>Leo (Age 8)</h3>
+              <span class="badge-role">Autistic Child</span>
+            </div>
+            <div class="perspective-quote">
+              "My body feels super buzzy inside! I want to squeeze really hard and see rainbow flashing lights to feel better."
+            </div>
+            <ul class="key-criteria">
+              <li><span class="icon">⚡</span> Arousal: <strong>High Restlessness</strong></li>
+              <li><span class="icon">✨</span> Seeking: <strong>Proprioceptive Pressure</strong></li>
+              <li><span class="icon">🚫</span> Fear: <strong>Being forced into darkness cold turkey</strong></li>
+            </ul>
+          </div>
+          <div class="stakeholder-action">
+            <div style="font-weight: 600; margin-bottom: 0.2rem;">Leo's Non-Verbal AAC Express:</div>
+            <div class="aac-buttons">
+              <button class="aac-btn active" onclick="setChildMood('buzzy', this)">⚡ Buzzy</button>
+              <button class="aac-btn" onclick="setChildMood('hug', this)">🫂 Need Hug</button>
+              <button class="aac-btn" onclick="setChildMood('sleepy', this)">🌙 Calmer</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stakeholder 2: Parent -->
+        <div class="stakeholder-card parent">
+          <div>
+            <div class="card-title-row">
+              <span style="font-size: 1.2rem;">👨‍👩‍👧</span>
+              <h3>Sarah (Mom)</h3>
+              <span class="badge-role">Caregiver</span>
+            </div>
+            <div class="perspective-quote">
+              "It's 9:15 PM and we have school tomorrow. Loud buzzing or flashing lights hype him up. The room needs to be quiet and dark."
+            </div>
+            <ul class="key-criteria">
+              <li><span class="icon">⏰</span> Constraint: <strong>Bedtime (Needs sleep)</strong></li>
+              <li><span class="icon">😴</span> Energy: <strong>Caregiver exhaustion high</strong></li>
+              <li><span class="icon">🛡️</span> Priority: <strong>Zero bright blue light or loud sirens</strong></li>
+            </ul>
+          </div>
+          <div class="stakeholder-action">
+            <div class="approval-check">
+              <span>Parent Preference: Warm Dimming</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="parentAgreeToggle" checked onchange="updateConsensus()">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stakeholder 3: Clinician -->
+        <div class="stakeholder-card clinician">
+          <div>
+            <div class="card-title-row">
+              <span style="font-size: 1.2rem;">🩺</span>
+              <h3>Dr. Chen (OT)</h3>
+              <span class="badge-role">Occupational Therapist</span>
+            </div>
+            <div class="perspective-quote">
+              "Abruptly removing sensory input will trigger an escalated fight-or-flight meltdown. We must substitute visual strobe with deep touch pressure."
+            </div>
+            <ul class="key-criteria">
+              <li><span class="icon">📋</span> Sensory Diet: <strong>Proprioceptive fading</strong></li>
+              <li><span class="icon">🫁</span> Biofeedback: <strong>60 BPM circadian breathing</strong></li>
+              <li><span class="icon">📈</span> Target: <strong>Gradual self-regulation transition</strong></li>
+            </ul>
+          </div>
+          <div class="stakeholder-action">
+            <div class="approval-check">
+              <span>Clinical Safety Protocol</span>
+              <label class="toggle-switch">
+                <input type="checkbox" id="clinicianAgreeToggle" checked onchange="updateConsensus()">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- AI Collaborative Mediation Engine -->
+      <div class="mediation-card">
+        <div class="mediation-header">
+          <h3>
+            <span>🤖</span> AI Multi-Stakeholder Mediation Engine
+          </h3>
+          <span style="font-size: 0.75rem; color: #c084fc; background: rgba(168,85,247,0.15); padding: 0.2rem 0.6rem; border-radius: 999px;">
+            Value Alignment Algorithm: Active
+          </span>
+        </div>
+
+        <div class="negotiation-synthesis">
+          <!-- Item 1: For the Child -->
+          <div class="synthesis-box">
+            <h4>🧒 For Leo (Sensory Need)</h4>
+            <p><strong>Substituted Gratification:</strong> Squeezing trackpad unlocks heavy <strong>deep-pressure haptic purr</strong> without alerting visual flashes.</p>
+          </div>
+
+          <!-- Item 2: For the Parent -->
+          <div class="synthesis-box">
+            <h4>👨‍👩‍👧 For Mom (Sleep Routine)</h4>
+            <p><strong>Circadian Fading:</strong> Replaced blue strobe with <strong>1800K amber breathing glow</strong> that auto-dims to 0% over 6 minutes.</p>
+          </div>
+
+          <!-- Item 3: For the Clinician -->
+          <div class="synthesis-box">
+            <h4>🩺 For Dr. Chen (Clinical Goals)</h4>
+            <p><strong>Therapeutic Regulation:</strong> Rhythmic 60 BPM pacing prompts slow parasympathetic nervous system down-regulation.</p>
+          </div>
+        </div>
+
+        <div class="consensus-footer">
+          <div class="consensus-status" id="consensusStatusText">
+            <span style="color: #34d399; font-size: 1.1rem;">✓</span> Tri-Stakeholder Consensus Reached: <strong>"Sensory Fading Routine"</strong>
+          </div>
+          <button class="btn-deploy" onclick="deployToyProfile()">
+            🚀 Deploy to Physical Toy
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
 
   <script>
-    function handleClick() {
-      const msg = document.getElementById('message');
-      msg.textContent = 'Button clicked! Welcome to the page.';
+    // --- State Variables ---
+    let audioCtx = null;
+    let isSoundOn = false;
+    let micStream = null;
+    let micAnalyser = null;
+    let currentPressure = 0;
+    let currentPhase = 1;
+    let currentToyMode = 'compromise'; // 'conflict', 'compromise', 'sleeping'
+
+    // Sound synthesis oscillators
+    let heartbeatOsc = null;
+    let ambientGain = null;
+
+    // --- Force Touch / Pointer Event Tracking ---
+    const creature = document.getElementById('creature');
+    const toyAura = document.getElementById('toyAura');
+    const forceBar = document.getElementById('forceBar');
+    const forceValue = document.getElementById('forceValue');
+    const hapticBar = document.getElementById('hapticBar');
+    const hapticValue = document.getElementById('hapticValue');
+    const systemStatusText = document.getElementById('systemStatusText');
+    const rhythmText = document.getElementById('rhythmText');
+
+    function updateVisualToy(pressure) {
+      currentPressure = pressure;
+      const pct = Math.min(100, Math.round(pressure * 100));
+      forceBar.style.width = pct + '%';
+
+      if (pct > 75) {
+        forceValue.textContent = `${pct}% (Deep Squeeze - Proprioceptive)`;
+        forceBar.style.backgroundColor = '#ef4444';
+      } else if (pct > 35) {
+        forceValue.textContent = `${pct}% (Firm Hug)`;
+        forceBar.style.backgroundColor = '#f59e0b';
+      } else if (pct > 0) {
+        forceValue.textContent = `${pct}% (Gentle Petting)`;
+        forceBar.style.backgroundColor = '#38bdf8';
+      } else {
+        forceValue.textContent = '0% (Idle)';
+      }
+
+      // Deform creature based on squeeze
+      const scaleX = 1 + (pressure * 0.28);
+      const scaleY = Math.max(0.65, 1 - (pressure * 0.35));
+      creature.style.transform = `scale(${scaleX}, ${scaleY})`;
+
+      // Dynamic Aura / Light Feedback depending on mode
+      if (currentToyMode === 'conflict') {
+        // High flash, agitated rainbow / cyan strobe
+        toyAura.style.background = `radial-gradient(circle, rgba(239, 68, 68, ${0.4 + pressure * 0.5}) 0%, rgba(245, 158, 11, 0.2) 50%, rgba(0,0,0,0) 70%)`;
+        toyAura.style.width = (240 + pressure * 80) + 'px';
+        toyAura.style.height = (240 + pressure * 80) + 'px';
+        hapticValue.textContent = pct > 20 ? 'Agitated Buzz (High Hz)' : 'Idle';
+        hapticBar.style.width = pct + '%';
+      } else if (currentToyMode === 'compromise') {
+        // Warm 1800K amber fading glow
+        toyAura.style.background = `radial-gradient(circle, rgba(245, 158, 11, ${0.25 + pressure * 0.4}) 0%, rgba(217, 119, 6, 0.15) 50%, rgba(0,0,0,0) 70%)`;
+        toyAura.style.width = (240 + pressure * 50) + 'px';
+        toyAura.style.height = (240 + pressure * 50) + 'px';
+        hapticValue.textContent = pct > 20 ? 'Deep Rhythmic Purr (40 Hz)' : 'Gentle Heartbeat';
+        hapticBar.style.width = Math.min(100, pct * 1.2) + '%';
+      } else if (currentToyMode === 'sleeping') {
+        // Night mode, soft dim breathing
+        toyAura.style.background = `radial-gradient(circle, rgba(99, 102, 241, 0.2) 0%, rgba(0,0,0,0) 70%)`;
+        hapticValue.textContent = 'Ultra-low circadian resonance';
+        hapticBar.style.width = '15%';
+      }
+
+      // Play squeeze audio resonance if audio is on
+      if (isSoundOn && pressure > 0.1) {
+        triggerSqueezeTone(pressure);
+      }
+    }
+
+    function handlePointerDown(e) {
+      creature.setPointerCapture(e.pointerId);
+      systemStatusText.textContent = "Child Squeezing Toy";
+      // Check for pressure from PointerEvent (or default to 0.7 if mouse)
+      const p = (e.pressure && e.pressure > 0) ? e.pressure : 0.65;
+      updateVisualToy(p);
+    }
+
+    function handlePointerMove(e) {
+      if (e.buttons > 0) {
+        let p = e.pressure;
+        // Safari webkitForce fallback
+        if (e.webkitForce !== undefined) {
+          p = Math.min(1.0, e.webkitForce / 2.0);
+        }
+        if (!p || p === 0) p = 0.65;
+        updateVisualToy(p);
+      }
+    }
+
+    function handlePointerUp(e) {
+      systemStatusText.textContent = "Toy at Rest";
+      updateVisualToy(0);
+    }
+
+    // Safari Force Touch specific listener
+    window.addEventListener('webkitmouseforcechanged', (e) => {
+      if (e.target.closest('#creature')) {
+        const normalized = Math.min(1.0, e.webkitForce / 2.0);
+        updateVisualToy(normalized);
+      }
+    });
+
+    // --- Web Audio Synthesizer (Heartbeat & Soothing Resonance) ---
+    function initAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+    }
+
+    function toggleAudioEngine() {
+      initAudio();
+      isSoundOn = !isSoundOn;
+      const soundBtn = document.getElementById('soundBtn');
+      const soundState = document.getElementById('soundState');
+
+      if (isSoundOn) {
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume();
+        }
+        soundBtn.classList.add('active');
+        soundState.textContent = 'Playing';
+        startHeartbeatLoop();
+      } else {
+        soundBtn.classList.remove('active');
+        soundState.textContent = 'Off';
+      }
+    }
+
+    function playHeartbeatClick() {
+      if (!isSoundOn || !audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(55, audioCtx.currentTime); // Low 55Hz soothing bass thump
+        osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + 0.12);
+
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.14);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.15);
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function triggerSqueezeTone(pressure) {
+      if (!audioCtx || !isSoundOn) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        // Pitch drops as you squeeze deeper (proprioceptive feedback)
+        osc.frequency.setValueAtTime(110 - (pressure * 40), audioCtx.currentTime);
+
+        gain.gain.setValueAtTime(pressure * 0.15, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.1);
+      } catch (e) {}
+    }
+
+    // 60 BPM rhythm interval
+    setInterval(() => {
+      if (isSoundOn) {
+        playHeartbeatClick();
+      }
+      // Pulsate eyes / text gently
+      const eyeL = document.getElementById('eyeLeft');
+      const eyeR = document.getElementById('eyeRight');
+      if (currentToyMode === 'compromise' || currentToyMode === 'sleeping') {
+        eyeL.style.height = '4px';
+        eyeR.style.height = '4px';
+        setTimeout(() => {
+          eyeL.style.height = currentToyMode === 'sleeping' ? '2px' : '12px';
+          eyeR.style.height = currentToyMode === 'sleeping' ? '2px' : '12px';
+        }, 150);
+      }
+    }, 1000);
+
+    function startHeartbeatLoop() {
+      playHeartbeatClick();
+    }
+
+    // --- Microphone Input (Blowing / Voice Sensor) ---
+    async function toggleMic() {
+      const micBtn = document.getElementById('micBtn');
+      const micState = document.getElementById('micState');
+
+      if (!micStream) {
+        try {
+          initAudio();
+          micStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+          const source = audioCtx.createMediaStreamSource(micStream);
+          micAnalyser = audioCtx.createAnalyser();
+          micAnalyser.fftSize = 256;
+          source.connect(micAnalyser);
+
+          micBtn.classList.add('active');
+          micState.textContent = 'Listening';
+          listenMicLevel();
+        } catch (err) {
+          alert('Could not access microphone: ' + err.message);
+        }
+      } else {
+        micStream.getTracks().forEach(t => t.stop());
+        micStream = null;
+        micBtn.classList.remove('active');
+        micState.textContent = 'Off';
+        document.getElementById('acousticBar').style.width = '0%';
+        document.getElementById('acousticValue').textContent = '0 dB';
+      }
+    }
+
+    function listenMicLevel() {
+      if (!micStream || !micAnalyser) return;
+      const data = new Uint8Array(micAnalyser.frequencyBinCount);
+      micAnalyser.getByteFrequencyData(data);
+      let sum = 0;
+      for (let i = 0; i < data.length; i++) sum += data[i];
+      let avg = sum / data.length;
+
+      const pct = Math.min(100, Math.round((avg / 128) * 100));
+      document.getElementById('acousticBar').style.width = pct + '%';
+      document.getElementById('acousticValue').textContent = `${Math.round(avg * 0.7)} dB`;
+
+      // If user blows or sighs into mic, slightly soothe creature
+      if (pct > 30) {
+        toyAura.style.transform = `scale(${1 + pct / 200})`;
+      } else {
+        toyAura.style.transform = 'scale(1)';
+      }
+
+      requestAnimationFrame(listenMicLevel);
+    }
+
+    // --- Stakeholder Interaction & Consensus ---
+    function setChildMood(mood, elem) {
+      document.querySelectorAll('.aac-btn').forEach(b => b.classList.remove('active'));
+      elem.classList.add('active');
+
+      if (mood === 'buzzy') {
+        currentToyMode = 'conflict';
+        systemStatusText.textContent = "Child feels restless & high-arousal";
+        rhythmText.textContent = "RESTLESS / SEEKING STIMULATION";
+      } else if (mood === 'hug') {
+        currentToyMode = 'compromise';
+        systemStatusText.textContent = "Child seeking deep pressure comfort";
+        rhythmText.textContent = "60 BPM DEEP EMBRACE";
+      } else if (mood === 'sleepy') {
+        currentToyMode = 'sleeping';
+        systemStatusText.textContent = "Child transitioning to sleep";
+        rhythmText.textContent = "RESTING CIRCADIAN RHYTHM";
+      }
+      updateVisualToy(currentPressure);
+    }
+
+    function updateConsensus() {
+      const pAgree = document.getElementById('parentAgreeToggle').checked;
+      const cAgree = document.getElementById('clinicianAgreeToggle').checked;
+      const statusText = document.getElementById('consensusStatusText');
+
+      if (pAgree && cAgree) {
+        statusText.innerHTML = `<span style="color: #34d399; font-size: 1.1rem;">✓</span> Tri-Stakeholder Consensus Reached: <strong>"Sensory Fading Routine"</strong>`;
+      } else {
+        statusText.innerHTML = `<span style="color: #f43f5e; font-size: 1.1rem;">⚠️</span> Pending alignment: Review parent and clinical constraints`;
+      }
+    }
+
+    function deployToyProfile() {
+      currentToyMode = 'compromise';
+      rhythmText.textContent = "ADAPTIVE FADING ACTIVE (6 MIN)";
+      systemStatusText.textContent = "Profile Deployed to Physical Toy";
+
+      // Animation flash on toy creature
+      creature.style.transition = "box-shadow 0.4s ease";
+      creature.style.boxShadow = "0 0 40px #a855f7, inset 0 0 20px #c084fc";
+      setTimeout(() => {
+        creature.style.boxShadow = "inset -6px -6px 16px rgba(0,0,0,0.5), inset 6px 6px 16px rgba(255,255,255,0.1), 0 10px 30px rgba(0,0,0,0.5)";
+      }, 1200);
+
+      alert("🎉 Success!\n\nThe AI-mediated 'Sensory Fading Profile' has been deployed to the sensory toy:\n• Child receives deep proprioceptive vibration upon squeezing\n• Amber light dims from 100% to 0% over 6 minutes\n• 60 BPM biofeedback rhythm guides sleep transition");
+    }
+
+    // --- Scenario Stepper ---
+    function setPhase(phase) {
+      currentPhase = phase;
+      document.querySelectorAll('.timeline-step').forEach((s, idx) => {
+        if (idx + 1 === phase) s.classList.add('active');
+        else s.classList.remove('active');
+      });
+
+      if (phase === 1) {
+        // High conflict
+        currentToyMode = 'conflict';
+        setChildMood('buzzy', document.querySelectorAll('.aac-btn')[0]);
+      } else if (phase === 2) {
+        // Voice triangulation
+        currentToyMode = 'conflict';
+      } else if (phase === 3) {
+        // AI Proposal
+        currentToyMode = 'compromise';
+        setChildMood('hug', document.querySelectorAll('.aac-btn')[1]);
+      } else if (phase === 4) {
+        // Consensus
+        currentToyMode = 'compromise';
+        deployToyProfile();
+      }
+      updateVisualToy(currentPressure);
     }
   </script>
 </body>
