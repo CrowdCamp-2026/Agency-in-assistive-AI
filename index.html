@@ -3,83 +3,225 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hello World</title>
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-      color: #333;
-    }
-    .card {
-      background: white;
-      padding: 2.5rem;
-      border-radius: 12px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-      text-align: center;
-      max-width: 400px;
-      width: 90%;
-    }
-    h1 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      color: #1a202c;
-    }
-    p {
-      color: #718096;
-      margin-bottom: 1.5rem;
-      font-size: 1rem;
-    }
-    button {
-      background-color: #3b82f6;
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      font-size: 1rem;
-      font-weight: 600;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.2s ease, transform 0.1s ease;
-    }
-    button:hover {
-      background-color: #2563eb;
-    }
-    button:active {
-      transform: scale(0.98);
-    }
-    #message {
-      margin-top: 1.25rem;
-      font-weight: 500;
-      color: #10b981;
-      min-height: 1.5rem;
-    }
-  </style>
-</head>
-<body>
-  <div class="card">
-    <h1>Hello, World!</h1>
-    <p>Welcome to your new HTML page.</p>
-    <button id="clickBtn">Click Me!</button>
-    <div id="message"></div>
-  </div>
-
+  <title>Sensory Cube: Tangible AAC & AI Deliberation for Autistic Communication Harmony</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Custom Sensory-Friendly & 3D Cube Styles -->
+  <link rel="stylesheet" href="./src/styles.css">
   <script>
-    const btn = document.getElementById('clickBtn');
-    const msg = document.getElementById('message');
-    let clickCount = 0;
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            teal: {
+              50: '#f0fdfa',
+              100: '#ccfbf1',
+              500: '#14b8a6',
+              600: '#0d9488',
+              700: '#0f766e',
+              900: '#134e4a'
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col">
 
-    btn.addEventListener('click', () => {
-      clickCount++;
-      msg.textContent = `Button clicked ${clickCount} time${clickCount === 1 ? '' : 's'}! 🎉`;
-    });
+  <!-- Header with Top-Level Screen Switcher -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-4">
+      
+      <!-- Brand Logo -->
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-gradient-to-tr from-teal-600 to-indigo-600 flex items-center justify-center text-white text-xl shadow-xs">
+          🎲
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-lg font-black tracking-tight text-slate-900">Sensory Cube</h1>
+            <span class="text-[10px] font-bold uppercase tracking-wider bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full">Tangible AAC + AI</span>
+          </div>
+          <p class="text-xs text-slate-500 font-medium">Collaborative Communication Harmony for Autistic Children & Families</p>
+        </div>
+      </div>
+
+      <!-- Top Tabs: Live (Child & Parent) vs Clinician Care Plan -->
+      <div class="flex items-center gap-2 bg-slate-100 p-1.5 rounded-2xl border border-slate-200">
+        <button id="navBtnLive" class="px-4 py-2 rounded-xl text-xs font-black transition-all bg-teal-600 text-white shadow-xs flex items-center gap-1.5">
+          <span>📱</span>
+          <span>Live Interaction (Child & Parent)</span>
+        </button>
+        <button id="navBtnClinician" class="px-4 py-2 rounded-xl text-xs font-black transition-all bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 flex items-center gap-1.5">
+          <span>🩺</span>
+          <span>Clinician Care Plan</span>
+        </button>
+      </div>
+
+      <!-- Context Scenario Dropdown -->
+      <div class="flex items-center gap-3">
+        <div id="scenarioSelectContainer"></div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+
+    <!-- SCREEN 1: LIVE INTERACTION WITH GENEROUS SPACING BETWEEN PERSPECTIVES -->
+    <div id="screenLive" class="grid grid-cols-1 lg:grid-cols-12 gap-8 xl:gap-12 items-start">
+
+      <!-- ======================================================== -->
+      <!-- LEFT SIDE: CHILD'S PERSPECTIVE (Physical Tangible Cube)  -->
+      <!-- ======================================================== -->
+      <div class="lg:col-span-6 bg-white rounded-3xl border-2 border-teal-200/80 shadow-md p-6 space-y-5">
+        
+        <!-- Child Header Banner -->
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2.5">
+            <span class="text-2xl p-2 bg-teal-50 rounded-xl border border-teal-200">🧒</span>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full perspective-badge-child">
+                  CHILD PERSPECTIVE
+                </span>
+                <span class="text-xs font-bold text-teal-800">Physical Tangible Interaction</span>
+              </div>
+              <h2 class="font-black text-slate-900 text-base mt-0.5">The Sensory Cube</h2>
+            </div>
+          </div>
+          <span class="text-[11px] font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-200">
+            Touch Cube Directly
+          </span>
+        </div>
+
+        <p class="text-xs text-slate-600 leading-relaxed font-medium">
+          Each side of the cube features <strong>4 interactive tactile quadrants</strong>. Touch any quadrant directly on the cube face to communicate your state!
+        </p>
+
+        <!-- 3D Large Interactive Cube Canvas -->
+        <div class="bg-gradient-to-b from-slate-50 to-teal-50/30 rounded-3xl border border-slate-200 p-4 flex flex-col items-center justify-center relative overflow-hidden shadow-inner">
+          
+          <!-- 3D Cube Canvas -->
+          <div class="cube-scene">
+            <div id="cube3D" class="cube-3d">
+              <div id="cubeSide1" class="cube-face face-front"></div>
+              <div id="cubeSide2" class="cube-face face-right"></div>
+              <div id="cubeSide3" class="cube-face face-back"></div>
+              <div id="cubeSide4" class="cube-face face-left"></div>
+              <div id="cubeSide5" class="cube-face face-top"></div>
+              <div id="cubeSide6" class="cube-face face-bottom bg-red-50 border-red-300"></div>
+            </div>
+          </div>
+
+          <!-- Active Face Info Label -->
+          <div id="activeFaceTitleText" class="mt-2 text-xs font-black text-slate-800 bg-white px-4 py-1.5 rounded-full border border-slate-200 shadow-xs text-center">
+            Face 1: Body Engine Battery (Touch a quadrant to set energy)
+          </div>
+
+          <!-- Direct Rotation & Face Switcher Navigation -->
+          <div class="w-full mt-4 pt-3 border-t border-slate-200/80 space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <button id="btnRotateLeft" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-bold transition-all shadow-xs flex items-center gap-1">
+                <span>◄</span> Rotate Left
+              </button>
+              <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Turn Cube Sides:</span>
+              <button id="btnRotateRight" class="px-3 py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-100 text-slate-700 font-bold transition-all shadow-xs flex items-center gap-1">
+                Rotate Right <span>►</span>
+              </button>
+            </div>
+
+            <!-- Face 1 through 6 Quick Selector Pills -->
+            <div class="flex flex-wrap items-center justify-center gap-1.5">
+              <button data-face="1" class="cube-face-pill text-[11px] font-bold px-2.5 py-1 rounded-lg border border-slate-200 transition-all bg-teal-600 text-white shadow-xs">
+                Face 1: Engine
+              </button>
+              <button data-face="2" class="cube-face-pill text-[11px] font-bold px-2.5 py-1 rounded-lg border border-slate-200 transition-all bg-white text-slate-700 hover:bg-slate-100">
+                Face 2: Sensory
+              </button>
+              <button data-face="3" class="cube-face-pill text-[11px] font-bold px-2.5 py-1 rounded-lg border border-slate-200 transition-all bg-white text-slate-700 hover:bg-slate-100">
+                Face 3: Comfort
+              </button>
+              <button data-face="4" class="cube-face-pill text-[11px] font-bold px-2.5 py-1 rounded-lg border border-slate-200 transition-all bg-white text-slate-700 hover:bg-slate-100">
+                Face 4: Buffer
+              </button>
+              <button data-face="5" class="cube-face-pill text-[11px] font-bold px-2.5 py-1 rounded-lg border border-slate-200 transition-all bg-white text-slate-700 hover:bg-slate-100">
+                Face 5: Zones
+              </button>
+              <button data-face="6" class="cube-face-pill text-[11px] font-bold px-2.5 py-1 rounded-lg border border-slate-200 transition-all bg-white text-slate-700 hover:bg-slate-100">
+                Face 6: STOP
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- ======================================================== -->
+      <!-- RIGHT SIDE: PARENT PERSPECTIVE (AI Deliberation Co-Pilot)-->
+      <!-- ======================================================== -->
+      <div class="lg:col-span-6 bg-white rounded-3xl border-2 border-indigo-200/80 shadow-md p-6 space-y-5">
+        
+        <!-- Parent Header Banner -->
+        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div class="flex items-center gap-2.5">
+            <span class="text-2xl p-2 bg-indigo-50 rounded-xl border border-indigo-200">🧑‍👧</span>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full perspective-badge-parent">
+                  PARENT PERSPECTIVE
+                </span>
+                <span class="text-xs font-bold text-indigo-800">Sensory Co-Pilot & Action Center</span>
+              </div>
+              <h2 class="font-black text-slate-900 text-base mt-0.5">Caregiver Dashboard</h2>
+            </div>
+          </div>
+          <span class="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-200">
+            Real-Time Translation
+          </span>
+        </div>
+
+        <!-- Parent Content Injected Here -->
+        <div id="parentCoPilotContainer"></div>
+
+      </div>
+
+    </div>
+
+    <!-- SCREEN 2: DEDICATED CLINICIAN SCREEN (Hidden by default, switched via top tab) -->
+    <div id="screenClinician" class="hidden"></div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-500">
+    Sensory Cube Prototype • Collaborative AAC & Neurodiversity-Affirming Personalization • CrowdCamp 2026
+  </footer>
+
+  <!-- Scripts -->
+  <script src="./src/prompts.js"></script>
+  <script src="./src/cube.js"></script>
+  <script src="./src/app.js"></script>
+  <script>
+    function launchSensoryCube() {
+      try {
+        if (window.SensoryCubeApp && !window.app) {
+          window.app = new window.SensoryCubeApp();
+          window.app.init();
+          console.log("SensoryCubeApp initialized successfully.");
+        }
+      } catch (err) {
+        console.error("Initialization error:", err);
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', launchSensoryCube);
+    } else {
+      launchSensoryCube();
+    }
   </script>
 </body>
 </html>

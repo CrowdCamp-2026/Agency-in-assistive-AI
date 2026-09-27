@@ -1,0 +1,129 @@
+/* Sensory-Friendly Calming Theme & Interactive Large 3D Sensory Cube */
+
+:root {
+  --primary-teal: #0d9488;
+  --bg-calm: #f8fafc;
+  --cube-size: 310px; /* Large, clear, readable cube */
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: var(--bg-calm);
+  color: #1e293b;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* 3D Cube Scene & Perspectives */
+.cube-scene {
+  width: var(--cube-size);
+  height: var(--cube-size);
+  perspective: 900px;
+  margin: 1.5rem auto;
+}
+
+.cube-3d {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.65s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.cube-face {
+  position: absolute;
+  width: var(--cube-size);
+  height: var(--cube-size);
+  border: 3px solid #cbd5e1;
+  border-radius: 1.75rem;
+  background: #ffffff;
+  box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.04), 0 12px 30px rgba(0, 0, 0, 0.08);
+  padding: 0.85rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  user-select: none;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Face transforms for standard 6-sided geometry */
+.face-front  { transform: rotateY(0deg) translateZ(calc(var(--cube-size) / 2)); }
+.face-right  { transform: rotateY(90deg) translateZ(calc(var(--cube-size) / 2)); }
+.face-back   { transform: rotateY(180deg) translateZ(calc(var(--cube-size) / 2)); }
+.face-left   { transform: rotateY(-90deg) translateZ(calc(var(--cube-size) / 2)); }
+.face-top    { transform: rotateX(90deg) translateZ(calc(var(--cube-size) / 2)); }
+.face-bottom { transform: rotateX(-90deg) translateZ(calc(var(--cube-size) / 2)); }
+
+/* Tactile quadrant buttons directly on the cube face */
+.cube-quadrant-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.4rem;
+  border-radius: 1rem;
+  border: 2px solid #e2e8f0;
+  background-color: #f8fafc;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+  text-align: center;
+}
+
+.cube-quadrant-btn:hover {
+  transform: scale(1.02);
+  border-color: #94a3b8;
+}
+
+.cube-quadrant-btn:active {
+  transform: scale(0.97);
+}
+
+.cube-quadrant-btn.active-teal {
+  background-color: #0d9488 !important;
+  border-color: #0f766e !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(13, 148, 136, 0.3);
+}
+
+.cube-quadrant-btn.active-amber {
+  background-color: #d97706 !important;
+  border-color: #b45309 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(217, 119, 6, 0.3);
+}
+
+.cube-quadrant-btn.active-indigo {
+  background-color: #4f46e5 !important;
+  border-color: #4338ca !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+}
+
+.cube-quadrant-btn.active-sky {
+  background-color: #0284c7 !important;
+  border-color: #0369a1 !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
+}
+
+/* Hard stop active pulse */
+@keyframes emergency-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+  70% { box-shadow: 0 0 0 16px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.emergency-active {
+  animation: emergency-pulse 1.2s infinite;
+}
+
+/* Perspective Column Headers */
+.perspective-badge-child {
+  background: linear-gradient(135deg, #0d9488 0%, #14b8a6 100%);
+  color: white;
+}
+
+.perspective-badge-parent {
+  background: linear-gradient(135deg, #4338ca 0%, #6366f1 100%);
+  color: white;
+}
