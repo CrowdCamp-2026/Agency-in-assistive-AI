@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HarmoniCube — Library Scenario: Public Space Conflict Mediation</title>
+  <style>
+    :root {
+      --bg-primary: #0a0e17;
+      --bg-secondary: #121927;
+      --card-bg: #1a2336;
+      --card-border: #24344d;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent-child: #f59e0b;
+      --accent-parent: #38bdf8;
+      --accent-clinician: #34d399;
+      --accent-ai: #a855f7;
+      --accent-danger: #f43f5e;
+      --accent-library: #6366f1;
+      --cube-size: 190px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem 1.5rem;
+      gap: 1rem;
+    }
+
+    /* Top Navigation */
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.78rem;
+      border: 1px solid var(--card-border);
+    }
+    .nav-links {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 0.3rem 0.7rem;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .nav-link:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .nav-link.active {
+      color: #fff;
+      background: var(--accent-ai);
+      font-weight: 600;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-secondary);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 0.85rem 1.35rem;
+    }
+
+    .header-left h1 {
+      font-size: 1.3rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    .header-left h1 span.badge {
+      background: linear-gradient(135deg, #6366f1, #38bdf8);
+      font-size: 0.7rem;
+      padding: 0.2rem 0.55rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .header-left p {
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      margin-top: 0.2rem;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .scenario-pill {
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid var(--accent-library);
+      color: #c7d2fe;
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 0.4rem 0.8rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .btn:hover { background: #25334a; border-color: #3b4e6d; }
+    .btn.active { background: var(--accent-ai); border-color: #c084fc; color: white; }
+
+    /* Main Grid Layout */
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 1.15fr 1.85fr;
+      gap: 1.1rem;
+      flex: 1;
+    }
+
+    /* LEFT: Tangible Sensory Cube in Library Mode */
+    .cube-panel {
+      background: var(--bg-secondary);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .cube-panel-header {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .cube-panel-header h2 {
+      font-size: 1rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+    .status-indicator {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 8px #10b981;
+    }
+
+    /* 3D Scene Container */
+    .scene-3d {
+      width: 270px;
+      height: 270px;
+      perspective: 900px;
+      margin: 0.75rem 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: grab;
+    }
+    .scene-3d:active { cursor: grabbing; }
+
+    .cube {
+      width: var(--cube-size);
+      height: var(--cube-size);
+      position: relative;
+      transform-style: preserve-3d;
+      transform: rotateX(-15deg) rotateY(25deg);
+      transition: transform 0.1s ease-out;
+    }
+
+    .cube-face {
+      position: absolute;
+      width: var(--cube-size);
+      height: var(--cube-size);
+      border-radius: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 0.85rem;
+      backface-visibility: visible;
+      touch-action: none;
+    }
+
+    /* 6 Sides (half of 190px = 95px) */
+    .face-front  { transform: rotateY(0deg) translateZ(95px); background: #1e293b; }
+    .face-back   { transform: rotateY(180deg) translateZ(95px); background: #131c2d; }
+    .face-top    { transform: rotateX(90deg) translateZ(95px); background: #1a2233; }
+    .face-bottom { transform: rotateX(-90deg) translateZ(95px); background: #0f172a; }
+    .face-left   { transform: rotateY(-90deg) translateZ(95px); background: #162032; }
+    .face-right  { transform: rotateY(90deg) translateZ(95px); background: #1b263b; }
+
+    /* Side 1: Front (Discreet Squeeze & Comfort Grip) */
+    .squeeze-membrane {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle, #334155 0%, #1e293b 80%);
+      border-radius: 12px;
+      position: relative;
+      overflow: hidden;
+      border: 1px dashed rgba(245, 158, 11, 0.4);
+      transition: all 0.1s ease;
+    }
+    .concentric-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 2px solid rgba(245, 158, 11, 0.3);
+      pointer-events: none;
+    }
+    .ring-1 { width: 100px; height: 100px; }
+    .ring-2 { width: 65px; height: 65px; border-color: rgba(245, 158, 11, 0.5); }
+    .ring-3 { width: 28px; height: 28px; background: rgba(245, 158, 11, 0.4); border-color: #f59e0b; }
+
+    /* Side 2: Top (Silent Optical Halo - Library Mode) */
+    .halo-face {
+      width: 100%;
+      height: 100%;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, rgba(0,0,0,0.5) 80%);
+      position: relative;
+    }
+    .silent-halo {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 3px solid #818cf8;
+      box-shadow: 0 0 15px #6366f1;
+      animation: pulseHalo 3s infinite ease-in-out;
+    }
+    @keyframes pulseHalo {
+      0%, 100% { transform: scale(0.9); opacity: 0.6; }
+      50% { transform: scale(1.15); opacity: 1; box-shadow: 0 0 25px #818cf8; }
+    }
+
+    /* Side 3: Left (Library AAC Non-Verbal Quick Tiles) */
+    .aac-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5px;
+      width: 100%;
+      height: 100%;
+    }
+    .aac-tile {
+      background: #233044;
+      border: 1px solid #334460;
+      border-radius: 7px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: #cbd5e1;
+      transition: all 0.15s;
+    }
+    .aac-tile span.icon { font-size: 1.1rem; margin-bottom: 2px; }
+    .aac-tile:hover, .aac-tile.active {
+      background: rgba(244, 63, 94, 0.2);
+      border-color: var(--accent-danger);
+      color: #fda4af;
+    }
+
+    /* Side 4: Right (Fidget & Grounding Texture) */
+    .texture-surface {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      padding: 6px;
+      border-radius: 12px;
+      background: #1e293b;
+      cursor: ns-resize;
+    }
+    .texture-rib {
+      height: 8px;
+      border-radius: 4px;
+      background: linear-gradient(180deg, #475569, #1e293b);
+      box-shadow: inset 0 1px 1px rgba(255,255,255,0.2), 0 2px 4px rgba(0,0,0,0.5);
+    }
+
+    /* Side 5: Bottom (Silent Haptic Thump - Parent Ping) */
+    .haptic-face {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: #0f172a;
+      gap: 6px;
+      text-align: center;
+    }
+    .haptic-core {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid var(--accent-parent);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: var(--accent-parent);
+    }
+
+    /* Side 6: Back (Inertial Motion & Pacing Tracker) */
+    .imu-face {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      background: #0d1524;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      padding: 8px;
+      text-align: center;
+      gap: 4px;
+    }
+
+    /* Quick Snap Bar */
+    .snap-bar {
+      width: 100%;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      justify-content: center;
+      margin-bottom: 0.6rem;
+    }
+    .snap-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      font-size: 0.68rem;
+      padding: 0.25rem 0.5rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .snap-btn:hover, .snap-btn.active {
+      background: var(--card-bg);
+      border-color: #64748b;
+      color: var(--text-main);
+    }
+
+    /* Sensor Readouts */
+    .sensor-readouts {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.25);
+      border-radius: 10px;
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .sensor-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .sensor-row-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.74rem;
+      color: var(--text-muted);
+    }
+    .progress-bar-bg {
+      height: 5px;
+      background: #232c3d;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--accent-child);
+      border-radius: 4px;
+      transition: width 0.08s linear;
+    }
+
+    /* RIGHT: Storyboard & Interactive Conflict Mediation */
+    .collab-engine {
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+
+    /* Storyboard 5-Step Bar */
+    .storyboard-bar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0.4rem;
+      background: var(--bg-secondary);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 0.45rem;
+    }
+    .story-step {
+      padding: 0.45rem 0.4rem;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      text-align: center;
+      cursor: pointer;
+      background: rgba(255,255,255,0.03);
+      color: var(--text-muted);
+      border: 1px solid transparent;
+      transition: all 0.2s;
+      line-height: 1.25;
+    }
+    .story-step.active {
+      background: rgba(99, 102, 241, 0.18);
+      border-color: var(--accent-library);
+      color: #e0e7ff;
+      font-weight: 600;
+    }
+
+    /* Comic Panel Walkthrough Card */
+    .comic-card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .comic-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .comic-header h3 {
+      font-size: 0.92rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: #c7d2fe;
+    }
+
+    .comic-body {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .comic-sketch-box {
+      background: #0f1624;
+      border: 1px solid #22324b;
+      border-radius: 8px;
+      padding: 0.85rem;
+      font-size: 0.75rem;
+      line-height: 1.45;
+    }
+    .comic-sketch-box strong { color: #f8fafc; }
+    .comic-sketch-box .highlight { color: #818cf8; font-weight: 600; }
+
+    /* Comparison Table: Watch vs Cube */
+    .vs-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.72rem;
+      background: rgba(0,0,0,0.2);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .vs-table th, .vs-table td {
+      padding: 0.5rem 0.6rem;
+      text-align: left;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .vs-table th {
+      background: rgba(255,255,255,0.04);
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+    .vs-table td.bad { color: #fda4af; }
+    .vs-table td.good { color: #a7f3d0; font-weight: 600; }
+
+    /* Interactive Simulation Buttons */
+    .action-row {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .action-btn {
+      flex: 1;
+      padding: 0.5rem 0.7rem;
+      border-radius: 6px;
+      font-size: 0.76rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.35rem;
+      transition: all 0.15s;
+    }
+    .action-btn:hover {
+      background: #233146;
+      border-color: #64748b;
+    }
+    .action-btn.primary {
+      background: linear-gradient(135deg, #6366f1, #38bdf8);
+      border: none;
+      color: white;
+    }
+
+    /* AI Interpretation Box */
+    .ai-bubble {
+      background: rgba(168, 85, 247, 0.1);
+      border: 1px solid rgba(168, 85, 247, 0.3);
+      border-radius: 8px;
+      padding: 0.75rem;
+      font-size: 0.76rem;
+      line-height: 1.45;
+    }
+    .ai-bubble-header {
+      font-weight: 600;
+      color: #d8b4fe;
+      margin-bottom: 0.3rem;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard-layout { grid-template-columns: 1fr; }
+      .comic-body { grid-template-columns: 1fr; }
+      .storyboard-bar { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation Switcher -->
+  <nav class="top-nav">
+    <div style="font-weight: 600; color: #cbd5e1;">HarmoniCube Scenarios:</div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">Example 1: Bedtime Sensory Overload vs. Sleep</a>
+      <a href="library.html" class="nav-link active">Example 2: Library Public Conflict (Cube vs. Smartwatch)</a>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <header>
+    <div class="header-left">
+      <h1>
+        HarmoniCube <span class="badge">Example 2 • Library Mediation</span>
+      </h1>
+      <p>Mediating Public Space Sensory Overload without Watch Stigma: Tangible Cube Architecture</p>
+    </div>
+    <div class="header-right">
+      <div class="scenario-pill">
+        <span>📚</span> Setting: Public Library (Quiet Zone)
+      </div>
+      <button class="btn" id="soundBtn" onclick="toggleAudioEngine()">
+        <span>🔊</span> Haptic Audio: <strong id="soundState">Off</strong>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Grid -->
+  <main class="dashboard-layout">
+
+    <!-- LEFT: 3D Cube (Library Mode) -->
+    <section class="cube-panel">
+      <div class="cube-panel-header">
+        <h2><span>🎲</span> Sensory Cube (Library Mode)</h2>
+        <div class="status-indicator">
+          <span class="dot" id="systemStatusDot"></span>
+          <span id="systemStatusText">Ready / Drag to Rotate 360°</span>
+        </div>
+      </div>
+
+      <!-- 3D Cube Scene -->
+      <div class="scene-3d" id="scene3d"
+           onpointerdown="startRotate(event)"
+           onpointermove="doRotate(event)"
+           onpointerup="endRotate(event)"
+           onpointercancel="endRotate(event)">
+        
+        <div class="cube" id="cube">
+          
+          <!-- Side 1: Front (Discreet Squeeze Pad) -->
+          <div class="cube-face face-front" id="faceFront"
+               onpointerdown="handleSqueezeDown(event)"
+               onpointermove="handleSqueezeMove(event)"
+               onpointerup="handleSqueezeUp(event)">
+            <div style="font-size: 0.65rem; color: #f59e0b; font-weight: 700;">
+              SIDE 1: SQUEEZE & REGULATE
+            </div>
+            <div class="squeeze-membrane" id="squeezeMembrane">
+              <div class="concentric-ring ring-1"></div>
+              <div class="concentric-ring ring-2"></div>
+              <div class="concentric-ring ring-3"></div>
+              <div style="z-index: 2; font-size: 0.72rem; font-weight: 700; color: #f1f5f9; text-shadow: 0 1px 4px #000;">
+                SQUEEZE HARD
+              </div>
+            </div>
+            <div style="font-size: 0.62rem; color: var(--text-muted); text-align: center;">
+              Discreet Proprioceptive Relief
+            </div>
+          </div>
+
+          <!-- Side 2: Back (Inertial Pacing Tracker) -->
+          <div class="cube-face face-back">
+            <div style="font-size: 0.65rem; color: #a855f7; font-weight: 700;">
+              SIDE 6: IMU MOTION DETECT
+            </div>
+            <div class="imu-face">
+              <div style="font-size: 1.4rem;">🏃‍♂️</div>
+              <div style="font-size: 0.7rem; font-weight: 600; color: #d8b4fe;">Pacing / Rocking Sensor</div>
+              <div style="font-size: 0.62rem; color: var(--text-muted);">Detects table circling stimming</div>
+            </div>
+            <div style="font-size: 0.62rem; color: var(--text-muted); text-align: center;">
+              State: <span id="imuStateText">Running Around Table</span>
+            </div>
+          </div>
+
+          <!-- Side 3: Top (Silent Optical Halo) -->
+          <div class="cube-face face-top">
+            <div style="font-size: 0.65rem; color: #818cf8; font-weight: 700;">
+              SIDE 2: SILENT OPTICAL HALO
+            </div>
+            <div class="halo-face">
+              <div class="silent-halo" id="silentHalo"></div>
+              <div style="position: absolute; bottom: 8px; font-size: 0.65rem; font-weight: 600; color: #c7d2fe;">
+                Zero Audio Spill in Library
+              </div>
+            </div>
+            <div style="font-size: 0.62rem; color: var(--text-muted); text-align: center;">
+              Discreet visual confirmation
+            </div>
+          </div>
+
+          <!-- Side 4: Bottom (Silent Haptic Parent Ping) -->
+          <div class="cube-face face-bottom">
+            <div style="font-size: 0.65rem; color: #38bdf8; font-weight: 700;">
+              SIDE 5: PARENT HAPTIC DOCK
+            </div>
+            <div class="haptic-face">
+              <div class="haptic-core">🫀</div>
+              <div style="font-size: 0.68rem; font-weight: 600; color: #bae6fd;">
+                "Mom is here" Cardiac Pulse
+              </div>
+            </div>
+            <div style="font-size: 0.62rem; color: var(--text-muted); text-align: center;">
+              Replaces jarring watch vibration
+            </div>
+          </div>
+
+          <!-- Side 5: Left (Library Non-Verbal AAC Tiles) -->
+          <div class="cube-face face-left">
+            <div style="font-size: 0.65rem; color: #f43f5e; font-weight: 700;">
+              SIDE 3: LIBRARY AAC TILES
+            </div>
+            <div class="aac-grid">
+              <div class="aac-tile active" onclick="handleAacSelect('🛑 Too Crowded', this)">
+                <span class="icon">🛑</span> Crowded
+              </div>
+              <div class="aac-tile" onclick="handleAacSelect('🚪 Want Exit', this)">
+                <span class="icon">🚪</span> Want Exit
+              </div>
+              <div class="aac-tile" onclick="handleAacSelect('🎧 Too Noisy', this)">
+                <span class="icon">🎧</span> Too Noisy
+              </div>
+              <div class="aac-tile" onclick="handleAacSelect('🫂 Hug Mom', this)">
+                <span class="icon">🫂</span> Need Hug
+              </div>
+            </div>
+            <div style="font-size: 0.62rem; color: var(--text-muted); text-align: center;">
+              Non-Verbal Agency
+            </div>
+          </div>
+
+          <!-- Side 6: Right (Fidget & Rubbing Texture) -->
+          <div class="cube-face face-right">
+            <div style="font-size: 0.65rem; color: #cbd5e1; font-weight: 700;">
+              SIDE 4: SILENT TEXTURE STRIP
+            </div>
+            <div class="texture-surface"
+                 onpointerdown="handleRub(event)"
+                 onpointermove="handleRub(event)">
+              <div class="texture-rib"></div>
+              <div class="texture-rib"></div>
+              <div class="texture-rib"></div>
+              <div class="texture-rib"></div>
+              <div class="texture-rib"></div>
+            </div>
+            <div style="font-size: 0.62rem; color: var(--text-muted); text-align: center;">
+              Sub-table stealth fidgeting
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Quick Snap Bar -->
+      <div class="snap-bar">
+        <button class="snap-btn active" onclick="snapToFace('front')">1. Squeeze Pad</button>
+        <button class="snap-btn" onclick="snapToFace('top')">2. Silent Halo</button>
+        <button class="snap-btn" onclick="snapToFace('left')">3. Library AAC</button>
+        <button class="snap-btn" onclick="snapToFace('right')">4. Texture Strip</button>
+        <button class="snap-btn" onclick="snapToFace('bottom')">5. Haptic Ping</button>
+        <button class="snap-btn" onclick="snapToFace('back')">6. Motion Tracker</button>
+      </div>
+
+      <!-- Live Sensor Gauges -->
+      <div class="sensor-readouts">
+        <div class="sensor-row">
+          <div class="sensor-row-header">
+            <span>Force Touch Trackpad Squeeze (Child Input)</span>
+            <span id="forceValue">0% (Idle)</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="forceBar"></div>
+          </div>
+        </div>
+
+        <div class="sensor-row">
+          <div class="sensor-row-header">
+            <span>Inertial Motion / Pacing Around Table</span>
+            <span id="motionValue">High (Running)</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="motionBar" style="background: var(--accent-danger); width: 85%;"></div>
+          </div>
+        </div>
+
+        <div class="sensor-row">
+          <div class="sensor-row-header">
+            <span>Discreet Parent Cardiac Pulse (Cube Feedback)</span>
+            <span id="hapticValue">Idle</span>
+          </div>
+          <div class="progress-bar-bg">
+            <div class="progress-bar-fill" id="hapticBar" style="background: var(--accent-parent);"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RIGHT: 5-Panel Storyboard Simulation & Smartwatch Comparison -->
+    <section class="collab-engine">
+
+      <!-- Storyboard Stepper (Matching Hand-Drawn Comic) -->
+      <div class="storyboard-bar">
+        <div class="story-step active" id="scene1" onclick="loadScene(1)">
+          <strong>Panel 1</strong><br>Pacing in Library
+        </div>
+        <div class="story-step" id="scene2" onclick="loadScene(2)">
+          <strong>Panel 2</strong><br>Discreet Parent Ping
+        </div>
+        <div class="story-step" id="scene3" onclick="loadScene(3)">
+          <strong>Panel 3</strong><br>Child Cube Squeeze
+        </div>
+        <div class="story-step" id="scene4" onclick="loadScene(4)">
+          <strong>Panel 4</strong><br>AI Meaning Translation
+        </div>
+        <div class="story-step" id="scene5" onclick="loadScene(5)">
+          <strong>Panel 5</strong><br>Calm Exit Together
+        </div>
+      </div>
+
+      <!-- Active Comic Scene Card -->
+      <div class="comic-card">
+        <div class="comic-header">
+          <h3 id="sceneTitle">
+            <span>📖</span> Panel 1: Sensory Overload & Running Around the Table
+          </h3>
+          <span style="font-size: 0.72rem; color: #818cf8; background: rgba(99,102,241,0.15); padding: 0.2rem 0.55rem; border-radius: 999px;" id="sceneBadge">
+            Arousal: 85% Overload
+          </span>
+        </div>
+
+        <div class="comic-body">
+          <div class="comic-sketch-box" id="sceneDesc">
+            <strong>Situation in Library:</strong><br>
+            The library has become crowded with people studying and whispering. Leo (autistic child) experiences sensory overstimulation from visual crowd clutter and begins <span class="highlight">running in circles around the large reading table</span> as motor stimming to cope.<br><br>
+            The mother notices people staring and feels distressed, wondering why Leo is running.
+          </div>
+
+          <!-- Interactive Action Buttons -->
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <div style="font-size: 0.72rem; font-weight: 600; color: #cbd5e1;">Test Physical Interaction:</div>
+            <div class="action-row">
+              <button class="action-btn" id="actionBtn1" onclick="simulateParentPing()">
+                <span>📲</span> Send Gentle Heartbeat Ping
+              </button>
+              <button class="action-btn primary" id="actionBtn2" onclick="simulateChildSqueeze()">
+                <span>✊</span> Simulate Squeeze (Side 1)
+              </button>
+            </div>
+            <div style="font-size: 0.68rem; color: var(--text-muted); text-align: center;">
+              (Or press your MacBook trackpad directly!)
+            </div>
+          </div>
+        </div>
+
+        <!-- AI Multi-Stakeholder Mediation Speech Bubble -->
+        <div class="ai-bubble" id="aiBubble">
+          <div class="ai-bubble-header">
+            <span>🤖</span> AI Mediator Analysis (Triangulating Cube Telemetry & Environment):
+          </div>
+          <p id="aiAnalysisText">
+            "High frequency orbital motion detected on <strong>Side 6 (IMU)</strong>. In a public library setting, running around tables indicates <em>compensatory proprioceptive seeking</em> due to auditory/visual crowd overload, not intentional defiance."
+          </p>
+        </div>
+      </div>
+
+      <!-- Why Cube Beats Smartwatch Table -->
+      <div class="comic-card" style="padding: 0.85rem;">
+        <div style="font-size: 0.82rem; font-weight: 600; color: #cbd5e1; margin-bottom: 0.4rem; display: flex; align-items: center; gap: 0.4rem;">
+          <span>⚖️</span> Why the Tangible Cube beats a Smartwatch in Public Spaces (CHI/CSCW Analysis)
+        </div>
+        <table class="vs-table">
+          <thead>
+            <tr>
+              <th>Dimension</th>
+              <th>Smartwatch Approach (Original Comic)</th>
+              <th>Tangible Sensory Cube (Our Prototype)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Tactile Sensation</strong></td>
+              <td class="bad">Jarring high-pitch wrist vibration (can trigger sensory shock)</td>
+              <td class="good">Warm, soothing 55Hz low-frequency palm pulse ("Mom is near")</td>
+            </tr>
+            <tr>
+              <td><strong>Child's Expressive Input</strong></td>
+              <td class="bad">Must tap tiny touch screen or wave arm (socially stigmatizing)</td>
+              <td class="good">Squeeze Side 1 or rotate "Want Exit" face UP inside jacket/pocket</td>
+            </tr>
+            <tr>
+              <td><strong>Stimming Affordance</strong></td>
+              <td class="bad">Flat glass screen offers zero sensory regulation</td>
+              <td class="good">Side 1 (Pressure) & Side 4 (Texture Ribs) satisfy sensory cravings</td>
+            </tr>
+            <tr>
+              <td><strong>Parent Interpretation</strong></td>
+              <td class="bad">Parent only sees the child running and assumes disobedience</td>
+              <td class="good">AI translates telemetry: "Crowd overload → Seeking exit"</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    // --- 3D Cube Rotation State ---
+    let rotX = -15;
+    let rotY = 25;
+    let isRotating = false;
+    let startX, startY;
+    const cube = document.getElementById('cube');
+
+    function updateCubeTransform() {
+      cube.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+    }
+
+    function startRotate(e) {
+      if (e.target.closest('#squeezeMembrane') || e.target.closest('.aac-tile') || e.target.closest('.texture-surface')) {
+        return;
+      }
+      isRotating = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      e.target.setPointerCapture(e.pointerId);
+    }
+
+    function doRotate(e) {
+      if (!isRotating) return;
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      rotY += dx * 0.7;
+      rotX -= dy * 0.7;
+      startX = e.clientX;
+      startY = e.clientY;
+      updateCubeTransform();
+    }
+
+    function endRotate(e) {
+      isRotating = false;
+    }
+
+    const faceRotations = {
+      front:  { x: 0,   y: 0 },
+      top:    { x: -90, y: 0 },
+      left:   { x: 0,   y: 90 },
+      right:  { x: 0,   y: -90 },
+      bottom: { x: 90,  y: 0 },
+      back:   { x: 0,   y: 180 }
+    };
+
+    function snapToFace(faceName) {
+      document.querySelectorAll('.snap-btn').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+
+      const target = faceRotations[faceName];
+      rotX = target.x;
+      rotY = target.y;
+      cube.style.transition = 'transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1)';
+      updateCubeTransform();
+      setTimeout(() => { cube.style.transition = 'transform 0.1s ease-out'; }, 500);
+
+      document.getElementById('systemStatusText').textContent = `Inspecting Face: ${faceName.toUpperCase()}`;
+    }
+
+    // --- Audio Synthesis ---
+    let audioCtx = null;
+    let isSoundOn = false;
+
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    function toggleAudioEngine() {
+      initAudio();
+      isSoundOn = !isSoundOn;
+      const soundBtn = document.getElementById('soundBtn');
+      const soundState = document.getElementById('soundState');
+
+      if (isSoundOn) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        soundBtn.classList.add('active');
+        soundState.textContent = 'Active';
+      } else {
+        soundBtn.classList.remove('active');
+        soundState.textContent = 'Off';
+      }
+    }
+
+    function playLowPulse(freq = 55) {
+      if (!isSoundOn || !audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.15);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.16);
+      } catch (e) {}
+    }
+
+    // --- Side 1: Squeeze Pad Trackpad Sensing ---
+    const squeezeMembrane = document.getElementById('squeezeMembrane');
+    const forceBar = document.getElementById('forceBar');
+    const forceValue = document.getElementById('forceValue');
+
+    function updatePressure(pressure) {
+      const pct = Math.min(100, Math.round(pressure * 100));
+      forceBar.style.width = pct + '%';
+
+      if (pct > 75) {
+        forceValue.textContent = `${pct}% (Deep Proprioceptive Squeeze)`;
+        forceBar.style.backgroundColor = '#ef4444';
+      } else if (pct > 30) {
+        forceValue.textContent = `${pct}% (Firm Squeeze)`;
+        forceBar.style.backgroundColor = '#f59e0b';
+      } else if (pct > 0) {
+        forceValue.textContent = `${pct}% (Gentle Touch)`;
+        forceBar.style.backgroundColor = '#38bdf8';
+      } else {
+        forceValue.textContent = '0% (Idle)';
+      }
+
+      squeezeMembrane.style.transform = `scale(${1 - pressure * 0.1})`;
+
+      if (pct > 50 && currentScene === 3) {
+        loadScene(4); // Advance to AI translation
+      }
+
+      if (isSoundOn && pressure > 0.2) playLowPulse(70);
+    }
+
+    function handleSqueezeDown(e) {
+      e.stopPropagation();
+      e.target.setPointerCapture(e.pointerId);
+      const p = (e.pressure && e.pressure > 0) ? e.pressure : 0.75;
+      updatePressure(p);
+    }
+
+    function handleSqueezeMove(e) {
+      if (e.buttons > 0) {
+        let p = e.pressure;
+        if (e.webkitForce !== undefined) p = Math.min(1.0, e.webkitForce / 2.0);
+        if (!p || p === 0) p = 0.75;
+        updatePressure(p);
+      }
+    }
+
+    function handleSqueezeUp(e) {
+      updatePressure(0);
+    }
+
+    window.addEventListener('webkitmouseforcechanged', (e) => {
+      if (e.target.closest('#squeezeMembrane')) {
+        updatePressure(Math.min(1.0, e.webkitForce / 2.0));
+      }
+    });
+
+    // --- AAC Interaction ---
+    function handleAacSelect(label, elem) {
+      document.querySelectorAll('.aac-tile').forEach(t => t.classList.remove('active'));
+      elem.classList.add('active');
+      document.getElementById('systemStatusText').textContent = `AAC Expressed: ${label}`;
+      if (label.includes('Exit') || label.includes('Crowded')) {
+        loadScene(4);
+      }
+    }
+
+    function handleRub(e) {
+      if (e.buttons > 0 && isSoundOn) playLowPulse(120);
+    }
+
+    // --- Storyboard Scenes ---
+    let currentScene = 1;
+
+    function loadScene(sceneNum) {
+      currentScene = sceneNum;
+      document.querySelectorAll('.story-step').forEach((s, i) => {
+        if (i + 1 === sceneNum) s.classList.add('active');
+        else s.classList.remove('active');
+      });
+
+      const title = document.getElementById('sceneTitle');
+      const desc = document.getElementById('sceneDesc');
+      const badge = document.getElementById('sceneBadge');
+      const aiText = document.getElementById('aiAnalysisText');
+      const motionBar = document.getElementById('motionBar');
+      const motionVal = document.getElementById('motionValue');
+      const imuState = document.getElementById('imuStateText');
+      const hapticBar = document.getElementById('hapticBar');
+      const hapticVal = document.getElementById('hapticValue');
+
+      if (sceneNum === 1) {
+        snapToFace('back');
+        title.innerHTML = '<span>📖</span> Panel 1: Sensory Overload & Pacing Around Table';
+        badge.textContent = 'Arousal: 85% Overload';
+        badge.style.background = 'rgba(244, 63, 94, 0.2)';
+        badge.style.color = '#fda4af';
+        desc.innerHTML = `<strong>Situation in Library:</strong><br>
+        The library has become crowded with people studying and whispering. Leo experiences sensory overload from visual crowd clutter and begins <span class="highlight">running in circles around the large table</span> as motor stimming.<br><br>
+        The mother notices people staring and feels distressed, wondering why Leo is running.`;
+        aiText.innerHTML = `"High frequency orbital motion detected on <strong>Side 6 (IMU)</strong>. In a public library setting, running around tables indicates <em>compensatory proprioceptive seeking</em> due to auditory/visual crowd overload, not intentional defiance."`;
+        motionBar.style.width = '85%';
+        motionVal.textContent = 'High (Running)';
+        imuState.textContent = 'Pacing / Running Around Table';
+      }
+      else if (sceneNum === 2) {
+        snapToFace('bottom');
+        title.innerHTML = '<span>📲</span> Panel 2: Mother Sends Discreet Haptic Check-in';
+        badge.textContent = 'Parent Cue: Gentle Palm Pulse';
+        desc.innerHTML = `<strong>Replacing the Smartwatch Buzz:</strong><br>
+        Instead of sending a buzzing command to a watch that makes Leo jump or panic, the mother uses her phone app to trigger a gentle, silent <strong>55Hz cardiac pulse on Side 5 of the cube</strong> in Leo's hand.<br><br>
+        This serves as a loving, silent tactile check-in: <em>"Leo, Mom is right here. Are you feeling overwhelmed?"</em>`;
+        aiText.innerHTML = `"Parent triggered Tier-1 discreet tactile check-in. The cube delivers a 60 BPM gentle pulse directly into the child's palm without emitting any audible sound in the quiet library."`;
+        hapticBar.style.width = '70%';
+        hapticVal.textContent = '55Hz Discreet Palm Pulse (Active)';
+        playLowPulse(55);
+      }
+      else if (sceneNum === 3) {
+        snapToFace('front');
+        title.innerHTML = '<span>✊</span> Panel 3: Leo Responds with Deep Squeeze (Side 1)';
+        badge.textContent = 'Child Expressing Need';
+        desc.innerHTML = `<strong>Embodied Child Response:</strong><br>
+        Leo holds the cube tightly. Feeling the mother's haptic heartbeat, Leo <span class="highlight">squeezes Side 1 with deep force (85%)</span> and turns <strong>Side 3 (AAC: Want Exit)</strong> upward.<br><br>
+        He doesn't need to speak in the quiet library or struggle with a smartwatch touchscreen.`;
+        aiText.innerHTML = `"Deep touch pressure detected (Force: 85%, Duration: 3.4s). Child simultaneously oriented <strong>Side 3 (AAC: 🛑 Too Crowded / 🚪 Want Exit)</strong> skyward. Confidence in sensory overload intent: 98%."`;
+      }
+      else if (sceneNum === 4) {
+        snapToFace('left');
+        title.innerHTML = '<span>🤖</span> Panel 4: AI Contextual Translation to Mother';
+        badge.textContent = 'AI Meaning Delivered';
+        desc.innerHTML = `<strong>Actionable Translation to Parent:</strong><br>
+        The AI combines the <em>running motion telemetry</em>, <em>deep pressure squeeze</em>, and <em>library environment</em> into a clear, empathetic message to the mother's phone/earpiece:<br><br>
+        <span class="highlight" style="color: #34d399; font-size: 0.85rem;">"Leo is not acting out. There are too many people in the library and he feels sensory overload. He squeezed the cube asking to leave together."</span>`;
+        aiText.innerHTML = `"<strong>Synthesis Complete:</strong> Relieved parent anxiety by demystifying child behavior. Recommended co-regulation action: Gather library books calmly and transition to quiet outdoor exit."`;
+        motionBar.style.width = '20%';
+        motionVal.textContent = 'Calming Down';
+        imuState.textContent = 'Standing with Mother';
+      }
+      else if (sceneNum === 5) {
+        snapToFace('top');
+        title.innerHTML = '<span>🚪</span> Panel 5: Mother and Child Leave Library Together';
+        badge.textContent = 'Resolved Harmoniously';
+        desc.innerHTML = `<strong>Positive Co-Regulation Outcome:</strong><br>
+        The mother smiles, takes Leo's hand, and sends a comforting confirmation pulse to the cube. Leo holds the cube quietly against his chest.<br><br>
+        <strong style="color: #34d399;">They walk out of the library doors together in calm harmony</strong>—preventing a public meltdown, avoiding smartwatch stigma, and honoring the child's agency.`;
+        aiText.innerHTML = `"<strong>Clinical & Caregiver Success:</strong> Zero verbal disruption in public facility. Child self-advocated through tangible cube interaction. Parent-child bond reinforced through empathetic AI mediation."`;
+        motionBar.style.width = '0%';
+        motionVal.textContent = 'Resting / Walking';
+        imuState.textContent = 'Holding Hands Exiting';
+        hapticBar.style.width = '0%';
+        hapticVal.textContent = 'Idle (Regulated)';
+      }
+    }
+
+    function simulateParentPing() {
+      loadScene(2);
+      playLowPulse(55);
+      setTimeout(() => playLowPulse(55), 400);
+    }
+
+    function simulateChildSqueeze() {
+      loadScene(3);
+      updatePressure(0.85);
+      setTimeout(() => {
+        updatePressure(0);
+        loadScene(4);
+      }, 1200);
+    }
+  </script>
+</body>
+</html>

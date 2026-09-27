@@ -38,6 +38,38 @@
       gap: 1rem;
     }
 
+    /* Top Navigation */
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      padding: 0.4rem 0.8rem;
+      font-size: 0.78rem;
+      border: 1px solid var(--card-border);
+    }
+    .nav-links {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 0.3rem 0.7rem;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .nav-link:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    .nav-link.active {
+      color: #fff;
+      background: var(--accent-ai);
+      font-weight: 600;
+    }
+
     /* Header */
     header {
       display: flex;
@@ -657,6 +689,15 @@
   </style>
 </head>
 <body>
+
+  <!-- Top Navigation Switcher -->
+  <nav class="top-nav">
+    <div style="font-weight: 600; color: #cbd5e1;">HarmoniCube Scenarios:</div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link active">Example 1: Bedtime Sensory Overload vs. Sleep</a>
+      <a href="library.html" class="nav-link">Example 2: Library Public Conflict (Cube vs. Smartwatch)</a>
+    </div>
+  </nav>
 
   <!-- Header -->
   <header>
