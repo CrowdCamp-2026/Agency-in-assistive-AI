@@ -573,15 +573,97 @@
       background: rgba(168, 85, 247, 0.15);
       border: 1px solid rgba(168, 85, 247, 0.4);
       border-radius: 6px;
-      padding: 0.35rem 0.55rem;
+      padding: 0.4rem 0.6rem;
       font-size: 0.7rem;
       color: #d8b4fe;
       margin-top: 4px;
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 4px;
     }
     .ai-chip strong { color: #c084fc; font-size: 0.65rem; text-transform: uppercase; }
+
+    /* Mom's Double Check Action Button */
+    .double-check-btn {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(168, 85, 247, 0.25));
+      border: 1px solid #f59e0b;
+      color: #fef08a;
+      padding: 0.35rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.68rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-top: 4px;
+      transition: all 0.15s;
+      align-self: flex-start;
+    }
+    .double-check-btn:hover {
+      background: #f59e0b;
+      color: #0b1320;
+      box-shadow: 0 0 10px rgba(245, 158, 11, 0.5);
+    }
+
+    /* Verification Yes/No Area on Cube */
+    .verification-overlay {
+      display: none;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid #10b981;
+      border-radius: 8px;
+      padding: 0.55rem;
+      margin-top: 0.45rem;
+      flex-direction: column;
+      gap: 0.35rem;
+      animation: alertPulse 1s ease-in-out infinite alternate;
+    }
+    .verification-overlay.active { display: flex; }
+    .verify-title {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #34d399;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .verify-btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.4rem;
+    }
+    .btn-yes {
+      background: #059669;
+      color: white;
+      border: none;
+      padding: 0.5rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      transition: all 0.15s;
+    }
+    .btn-yes:hover { background: #10b981; transform: scale(1.02); }
+    .btn-no {
+      background: #dc2626;
+      color: white;
+      border: none;
+      padding: 0.5rem;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+      transition: all 0.15s;
+    }
+    .btn-no:hover { background: #ef4444; transform: scale(1.02); }
 
     /* Incoming Flash Alert on Phone */
     .phone-incoming-alert {
@@ -878,6 +960,22 @@
           </div>
         </div>
 
+        <!-- Mom's Double-Check Verification Mode (YES / NO) -->
+        <div class="verification-overlay active" id="verificationOverlay">
+          <div class="verify-title">
+            <span>❓ MOM DOUBLE-CHECKS:</span>
+            <span id="verifyQuestionText">"Do you want to leave the library now?"</span>
+          </div>
+          <div class="verify-btn-row">
+            <button class="btn-yes" onclick="childRespondYesNo('YES')">
+              <span>🟢</span> Squeeze YES (Leave)
+            </button>
+            <button class="btn-no" onclick="childRespondYesNo('NO')">
+              <span>🔴</span> Double-Tap NO (Stay)
+            </button>
+          </div>
+        </div>
+
         <!-- Custom Message from Child -->
         <div class="child-custom-bar">
           <input type="text" id="childCustomInput" class="child-custom-input" 
@@ -939,6 +1037,25 @@
           <div class="msg-bubble">
             🫀 Cube screen updated & delivered 55Hz heartbeat pulse to Leo's hand
           </div>
+        </div>
+
+        <!-- Initial Child Message with AI Interpretation & Double-Check Button -->
+        <div class="msg-row child">
+          <div class="msg-bubble">
+            <div style="font-weight: 700; color: #fbbf24; font-size: 0.72rem; margin-bottom: 2px;">
+              [Side 1: ✊ Deep Squeeze (88%)]
+            </div>
+            "✊ Squeezed Cube (88% Deep Force)"
+            
+            <div class="ai-chip">
+              <strong>🤖 AI Sensory Interpretation:</strong>
+              Leo is experiencing acute crowd overload. His deep squeeze signals sensory dysregulation and intent to exit.
+              <button class="double-check-btn" onclick="startDoubleCheck('Do you want to leave the library now?')">
+                ❓ Mom Double-Checks: Ask Leo "Do you want to leave?" (Yes / No)
+              </button>
+            </div>
+          </div>
+          <div class="msg-meta">Leo (via Sensory Cube) • 9:24 AM</div>
         </div>
 
       </div>
@@ -1176,6 +1293,13 @@
 
         const row = document.createElement('div');
         row.className = 'msg-row child';
+
+        // Compute suggested action for double-check prompt
+        let checkAction = "leave the library now";
+        if (actionText.toLowerCase().includes("hug")) checkAction = "get a hug from Mom";
+        else if (actionText.toLowerCase().includes("5 min") || actionText.toLowerCase().includes("5 more")) checkAction = "stay for 5 more minutes";
+        else if (actionText.toLowerCase().includes("rub") || actionText.toLowerCase().includes("texture")) checkAction = "quietly sit and rub the texture strip";
+
         row.innerHTML = `
           <div class="msg-bubble">
             <div style="font-weight: 700; color: #fbbf24; font-size: 0.72rem; margin-bottom: 2px;">
@@ -1186,6 +1310,9 @@
             <div class="ai-chip">
               <strong>🤖 AI Sensory Interpretation:</strong>
               ${escapeHtml(aiTranslation)}
+              <button class="double-check-btn" onclick="startDoubleCheck('Do you want to ${checkAction}?')">
+                ❓ Mom Double-Checks: Ask Leo "Do you want to ${checkAction}?" (Yes / No)
+              </button>
             </div>
           </div>
           <div class="msg-meta">Leo (via Sensory Cube) • ${now}</div>
@@ -1203,6 +1330,71 @@
         }, 3000);
 
       }, 400);
+    }
+
+    // Mom triggers Double-Check verification question to child's cube
+    function startDoubleCheck(question) {
+      addParentMessageToChat(`Leo, the AI thinks you want this. Double-checking with you: "${question}" Please answer YES or NO on your cube.`);
+
+      snapToFace('front');
+      const cubeOled = document.getElementById('cubeOled');
+      cubeOled.classList.add('pulse');
+      document.getElementById('oledHeader').textContent = 'MOM DOUBLE-CHECKS:';
+      document.getElementById('oledMessage').textContent = `"${question}"`;
+      document.getElementById('cubeStatus').textContent = 'Mom is double-checking... Squeeze YES or NO';
+
+      const overlay = document.getElementById('verificationOverlay');
+      overlay.classList.add('active');
+      document.getElementById('verifyQuestionText').textContent = `"${question}"`;
+
+      playHapticThump(60);
+    }
+
+    // Child responds YES or NO on the cube
+    function childRespondYesNo(answer) {
+      const isYes = (answer === 'YES');
+      const actionText = isYes ? '🟢 YES, I want to do this!' : '🔴 NO, I don’t want that.';
+      const badgeLabel = isYes ? 'Child Verified: 🟢 YES' : 'Child Clarified: 🔴 NO';
+      const aiTranslation = isYes 
+        ? 'Leo confirmed YES via Cube. AI interpretation verified accurate by the child. Mom can proceed with confidence.' 
+        : 'Leo indicated NO via Cube. AI interpretation corrected by child agency. Leo does not want this action right now.';
+
+      snapToFace('front');
+      const cubeOled = document.getElementById('cubeOled');
+      document.getElementById('oledHeader').textContent = 'VERIFICATION SENT:';
+      document.getElementById('oledMessage').textContent = isYes ? 'SENT: 🟢 YES' : 'SENT: 🔴 NO';
+      document.getElementById('cubeStatus').textContent = `Sent: ${answer} to Mom ✓`;
+
+      if (isYes) {
+        playHapticThump(70);
+      } else {
+        playHapticThump(45);
+        setTimeout(() => playHapticThump(45), 200);
+      }
+
+      setTimeout(() => {
+        const stream = document.getElementById('chatStream');
+        const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+        const row = document.createElement('div');
+        row.className = 'msg-row child';
+        row.innerHTML = `
+          <div class="msg-bubble" style="${isYes ? 'border-color: #10b981;' : 'border-color: #ef4444;'}">
+            <div style="font-weight: 700; color: ${isYes ? '#34d399' : '#f87171'}; font-size: 0.72rem; margin-bottom: 2px;">
+              [${badgeLabel}]
+            </div>
+            "${actionText}"
+            
+            <div class="ai-chip" style="${isYes ? 'border-color: rgba(16,185,129,0.4);' : 'border-color: rgba(239,68,68,0.4);'}">
+              <strong style="color: ${isYes ? '#34d399' : '#f87171'};">🤖 Human-in-the-Loop Grounding:</strong>
+              ${aiTranslation}
+            </div>
+          </div>
+          <div class="msg-meta">Leo (via Sensory Cube) • ${now}</div>
+        `;
+        stream.appendChild(row);
+        stream.scrollTop = stream.scrollHeight;
+      }, 350);
     }
 
     function sendChildCustomMessage() {
