@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HarmoniCube — Multi-Modal Parent-Child Messenger</title>
+  <style>
+    :root {
+      --bg-primary: #0a0e17;
+      --bg-secondary: #121927;
+      --card-bg: #182234;
+      --card-border: #23344d;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent-child: #f59e0b;
+      --accent-parent: #38bdf8;
+      --accent-ai: #a855f7;
+      --cube-size: 190px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 0.85rem 1.4rem;
+      gap: 0.85rem;
+    }
+
+    /* Top Navigation */
+    .top-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 8px;
+      padding: 0.35rem 0.8rem;
+      font-size: 0.76rem;
+      border: 1px solid var(--card-border);
+    }
+    .nav-links { display: flex; gap: 0.4rem; }
+    .nav-link {
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 0.25rem 0.65rem;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    .nav-link:hover { color: var(--text-main); background: rgba(255, 255, 255, 0.05); }
+    .nav-link.active { color: #fff; background: var(--accent-ai); font-weight: 600; }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-secondary);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 0.8rem 1.4rem;
+    }
+    .header-left h1 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .header-left h1 span.badge {
+      background: linear-gradient(135deg, #f59e0b, #38bdf8);
+      color: #0b1320;
+      font-size: 0.68rem;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .header-left p { color: var(--text-muted); font-size: 0.78rem; margin-top: 0.15rem; }
+
+    .btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 0.35rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.15s;
+    }
+    .btn:hover { background: #25334a; border-color: #3b4e6d; }
+    .btn.active { background: var(--accent-ai); border-color: #c084fc; color: white; }
+
+    /* Main Two Panels Layout */
+    .chat-layout {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 1.1rem;
+      flex: 1;
+      min-height: 0;
+    }
+
+    /* =========================================
+       PANEL A (LEFT): CHILD'S TANGIBLE MODALITIES
+       ========================================= */
+    .child-side {
+      background: var(--bg-secondary);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .panel-title-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .panel-title-bar h2 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: #fde68a;
+    }
+    .modality-tag {
+      font-size: 0.68rem;
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #fde68a;
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+    }
+
+    /* 3D Scene */
+    .scene-3d {
+      width: 100%;
+      height: 220px;
+      perspective: 900px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: grab;
+      position: relative;
+    }
+    .scene-3d:active { cursor: grabbing; }
+
+    .cube {
+      width: var(--cube-size);
+      height: var(--cube-size);
+      position: relative;
+      transform-style: preserve-3d;
+      transform: rotateX(-14deg) rotateY(24deg);
+      transition: transform 0.1s ease-out;
+    }
+
+    .cube-face {
+      position: absolute;
+      width: var(--cube-size);
+      height: var(--cube-size);
+      border-radius: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.6), 0 0 15px rgba(0, 0, 0, 0.4);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 0.75rem;
+      backface-visibility: visible;
+      touch-action: none;
+    }
+
+    /* 6 Sides (half of 190px = 95px) */
+    .face-front  { transform: rotateY(0deg) translateZ(95px); background: #162032; }
+    .face-back   { transform: rotateY(180deg) translateZ(95px); background: #111a28; }
+    .face-top    { transform: rotateX(90deg) translateZ(95px); background: #182236; }
+    .face-bottom { transform: rotateX(-90deg) translateZ(95px); background: #0c1422; }
+    .face-left   { transform: rotateY(-90deg) translateZ(95px); background: #151e30; }
+    .face-right  { transform: rotateY(90deg) translateZ(95px); background: #1a253a; }
+
+    /* FRONT: Light & Screen */
+    .cube-screen {
+      background: #090e18;
+      border: 1px solid #38bdf8;
+      border-radius: 8px;
+      padding: 0.45rem;
+      height: 60px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      box-shadow: inset 0 0 8px rgba(56, 189, 248, 0.3), 0 0 10px rgba(56, 189, 248, 0.2);
+      transition: all 0.3s ease;
+    }
+    .screen-subtitle { font-size: 0.58rem; color: #38bdf8; font-weight: 700; text-transform: uppercase; }
+    .screen-maintext { font-size: 0.72rem; font-weight: 600; color: #fff; margin-top: 2px; }
+
+    .front-squeeze-zone {
+      flex: 1;
+      margin-top: 5px;
+      background: radial-gradient(circle, #25334a 0%, #162032 80%);
+      border-radius: 8px;
+      border: 1.5px dashed rgba(245, 158, 11, 0.5);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .front-squeeze-zone:hover { border-color: #f59e0b; background: rgba(245, 158, 11, 0.15); }
+
+    /* OTHER FACES */
+    .glow-face-top {
+      height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;
+      border-radius: 10px; background: radial-gradient(circle, rgba(245, 158, 11, 0.4) 0%, rgba(0,0,0,0.5) 80%);
+    }
+    .halo-orb {
+      width: 45px; height: 45px; border-radius: 50%; background: #fbbf24; box-shadow: 0 0 20px #f59e0b;
+      animation: pulseGlow 2.5s infinite ease-in-out;
+    }
+    @keyframes pulseGlow { 0%, 100% { transform: scale(0.9); opacity: 0.6; } 50% { transform: scale(1.15); opacity: 1; } }
+
+    .symbols-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; height: 100%; }
+    .sym-card {
+      background: #233044; border: 1px solid #334460; border-radius: 6px;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      font-size: 0.65rem; font-weight: 600; color: #cbd5e1; cursor: pointer; transition: all 0.15s;
+    }
+    .sym-card span { font-size: 1.1rem; }
+    .sym-card:hover { background: rgba(245, 158, 11, 0.2); border-color: var(--accent-child); color: #fbbf24; }
+
+    .texture-box {
+      height: 100%; display: flex; flex-direction: column; justify-content: space-around;
+      padding: 6px; border-radius: 10px; background: #162032; cursor: ns-resize;
+    }
+    .rib { height: 7px; border-radius: 3px; background: linear-gradient(180deg, #475569, #1e293b); }
+
+    /* SNAP BUTTONS */
+    .snap-bar { display: flex; gap: 0.25rem; justify-content: center; }
+    .snap-btn {
+      background: rgba(255, 255, 255, 0.05); border: 1px solid var(--card-border);
+      color: var(--text-muted); font-size: 0.65rem; padding: 0.18rem 0.45rem; border-radius: 5px; cursor: pointer;
+    }
+    .snap-btn:hover { background: var(--card-bg); color: var(--text-main); }
+
+    /* =========================================
+       CHILD TANGIBLE MODALITY CONTROLLER (SIMPLE)
+       ========================================= */
+    .modality-controller {
+      background: rgba(0, 0, 0, 0.22);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.55rem;
+    }
+
+    .modality-row-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .action-chips-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0.35rem;
+    }
+
+    .tangible-btn {
+      background: #1e2838;
+      border: 1px solid #334460;
+      color: var(--text-main);
+      padding: 0.45rem 0.2rem;
+      border-radius: 7px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.2rem;
+      text-align: center;
+      transition: all 0.15s;
+    }
+    .tangible-btn span.icon { font-size: 1.15rem; }
+    .tangible-btn:hover {
+      background: rgba(245, 158, 11, 0.2);
+      border-color: #f59e0b;
+      transform: translateY(-1px);
+    }
+    .tangible-btn.active {
+      border-color: #f59e0b;
+      background: rgba(245, 158, 11, 0.25);
+      color: #fde68a;
+    }
+
+    /* =========================================
+       PANEL B (RIGHT): PARENT'S DIGITAL MODALITY
+       ========================================= */
+    .parent-side {
+      background: var(--bg-secondary);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    }
+
+    .parent-header {
+      background: #0f1624;
+      border-bottom: 1px solid var(--card-border);
+      padding: 0.65rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .parent-header h3 { font-size: 0.85rem; font-weight: 600; color: #bae6fd; }
+    .parent-header p { font-size: 0.66rem; color: #34d399; }
+
+    /* Chat Stream */
+    .chat-stream {
+      flex: 1;
+      padding: 0.85rem 1rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+      background: #0a0f19;
+      min-height: 280px;
+    }
+
+    .msg-row { display: flex; flex-direction: column; max-width: 82%; }
+    .msg-row.parent { align-self: flex-end; align-items: flex-end; }
+    .msg-row.child { align-self: flex-start; align-items: flex-start; }
+
+    .msg-bubble {
+      padding: 0.55rem 0.8rem;
+      border-radius: 12px;
+      font-size: 0.76rem;
+      line-height: 1.35;
+    }
+    .parent .msg-bubble {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      color: #fff;
+      border-bottom-right-radius: 3px;
+    }
+    .child .msg-bubble {
+      background: #1e293b;
+      color: #f1f5f9;
+      border: 1px solid #334155;
+      border-bottom-left-radius: 3px;
+    }
+
+    .modality-badge {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #fbbf24;
+      margin-bottom: 2px;
+    }
+    .modality-translation {
+      background: rgba(168, 85, 247, 0.15);
+      border: 1px solid rgba(168, 85, 247, 0.35);
+      border-radius: 5px;
+      padding: 0.3rem 0.5rem;
+      margin-top: 4px;
+      font-size: 0.68rem;
+      color: #d8b4fe;
+    }
+    .msg-time { font-size: 0.62rem; color: var(--text-muted); margin-top: 2px; }
+
+    /* Parent Input & Effects Bar */
+    .parent-composer {
+      background: #0e1522;
+      border-top: 1px solid var(--card-border);
+      padding: 0.65rem 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.45rem;
+    }
+
+    .effects-picker {
+      display: flex;
+      gap: 0.4rem;
+      align-items: center;
+      font-size: 0.68rem;
+      color: var(--text-muted);
+    }
+    .effect-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 0.2rem 0.5rem;
+      border-radius: 999px;
+      font-size: 0.65rem;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .effect-btn.active {
+      background: rgba(56, 189, 248, 0.2);
+      border-color: var(--accent-parent);
+      color: #bae6fd;
+      font-weight: 600;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .parent-input {
+      flex: 1;
+      background: #1a2336;
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 0.45rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.76rem;
+      outline: none;
+    }
+    .parent-input:focus { border-color: #38bdf8; }
+    .send-btn {
+      background: var(--accent-parent);
+      color: #0b1320;
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      transition: all 0.15s;
+    }
+    .send-btn:hover { transform: scale(1.05); background: #7dd3fc; }
+
+    @media (max-width: 900px) {
+      .chat-layout { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navigation -->
+  <nav class="top-nav">
+    <div style="font-weight: 600; color: #cbd5e1;">HarmoniCube Demos:</div>
+    <div class="nav-links">
+      <a href="simple.html" class="nav-link active">Simple Multi-Modal Messenger</a>
+      <a href="library.html" class="nav-link">Library Bi-Directional Demo</a>
+      <a href="index.html" class="nav-link">Bedtime Tri-Stakeholder Demo</a>
+    </div>
+  </nav>
+
+  <!-- Header -->
+  <header>
+    <div class="header-left">
+      <h1>
+        HarmoniCube <span class="badge">Multi-Modal Messenger</span>
+      </h1>
+      <p>Mutual Communication between Parent (Words) & Child (Tangible Squeeze, Light, Texture & Symbols)</p>
+    </div>
+    <button class="btn" id="soundBtn" onclick="toggleAudioEngine()">
+      <span>🔊</span> Haptics: <strong id="soundState">Off</strong>
+    </button>
+  </header>
+
+  <!-- Main Bi-Directional Chat Layout -->
+  <main class="chat-layout">
+
+    <!-- ==============================================
+         PANEL A (LEFT): CHILD'S TANGIBLE SENSORY MODALITIES
+         ============================================== -->
+    <section class="child-side">
+      <div class="panel-title-bar">
+        <h2><span>🎲</span> Leo's Cube (Child's Tangible Modality)</h2>
+        <span class="modality-tag">Sensory Affordances Active</span>
+      </div>
+
+      <!-- 3D Cube Canvas -->
+      <div class="scene-3d" id="scene3d"
+           onpointerdown="startRotate(event)"
+           onpointermove="doRotate(event)"
+           onpointerup="endRotate(event)"
+           onpointercancel="endRotate(event)">
+        
+        <div class="cube" id="cube">
+          
+          <!-- SIDE 1: FRONT (Light / Screen + Squeeze) -->
+          <div class="cube-face face-front" id="faceFront">
+            <div class="cube-screen" id="cubeScreen">
+              <div class="screen-subtitle" id="screenLabel">MOM SENT:</div>
+              <div class="screen-maintext" id="screenText">"I love you, Leo! Take your time."</div>
+            </div>
+
+            <div class="front-squeeze-zone" onclick="sendChildModality('pressure', 'firm')">
+              <div style="font-size: 1.4rem;">✊</div>
+              <div style="font-size: 0.7rem; font-weight: 700; color: #fbbf24;">Squeeze Pad</div>
+              <div style="font-size: 0.58rem; color: #94a3b8;">Click or Press Trackpad</div>
+            </div>
+            <div style="font-size: 0.6rem; color: var(--text-muted); text-align: center;">Side 1: Visual & Pressure</div>
+          </div>
+
+          <!-- SIDE 2: TOP (Color Glow Aura) -->
+          <div class="cube-face face-top">
+            <div style="font-size: 0.6rem; color: #fbbf24; font-weight: 700;">SIDE 2: MOOD GLOW</div>
+            <div class="glow-face-top" id="glowFaceTop">
+              <div class="halo-orb" id="haloOrb"></div>
+            </div>
+            <div style="font-size: 0.6rem; color: var(--text-muted); text-align: center;">Visual Color Channel</div>
+          </div>
+
+          <!-- SIDE 3: LEFT (Symbols / Emojis) -->
+          <div class="cube-face face-left">
+            <div style="font-size: 0.6rem; color: #f43f5e; font-weight: 700;">SIDE 3: SYMBOLS</div>
+            <div class="symbols-grid">
+              <div class="sym-card" onclick="sendChildModality('symbol', '❤️ Love')">
+                <span>❤️</span> Love
+              </div>
+              <div class="sym-card" onclick="sendChildModality('symbol', '🚪 Exit')">
+                <span>🚪</span> Exit
+              </div>
+              <div class="sym-card" onclick="sendChildModality('symbol', '☕ Break')">
+                <span>☕</span> Break
+              </div>
+              <div class="sym-card" onclick="sendChildModality('symbol', '✅ OK')">
+                <span>✅</span> OK
+              </div>
+            </div>
+            <div style="font-size: 0.6rem; color: var(--text-muted); text-align: center;">Symbolic Channel</div>
+          </div>
+
+          <!-- SIDE 4: RIGHT (Tactile Texture) -->
+          <div class="cube-face face-right">
+            <div style="font-size: 0.6rem; color: #cbd5e1; font-weight: 700;">SIDE 4: TEXTURE</div>
+            <div class="texture-box" onclick="sendChildModality('tactile', 'stroke')">
+              <div class="rib"></div>
+              <div class="rib"></div>
+              <div class="rib"></div>
+              <div class="rib"></div>
+            </div>
+            <div style="font-size: 0.6rem; color: var(--text-muted); text-align: center;">Tactile Channel</div>
+          </div>
+
+          <!-- SIDE 5: BOTTOM (Haptic Core) -->
+          <div class="cube-face face-bottom">
+            <div style="font-size: 0.6rem; color: #38bdf8; font-weight: 700;">SIDE 5: HAPTICS</div>
+            <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
+              <div style="font-size: 1.6rem;">🫀</div>
+              <div style="font-size: 0.68rem; color: #bae6fd; font-weight: 600;">55Hz Chassis Pulse</div>
+            </div>
+            <div style="font-size: 0.6rem; color: var(--text-muted); text-align: center;">Kinesthetic Channel</div>
+          </div>
+
+          <!-- SIDE 6: BACK (Orientation) -->
+          <div class="cube-face face-back">
+            <div style="font-size: 0.6rem; color: #a855f7; font-weight: 700;">SIDE 6: ORIENTATION</div>
+            <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
+              <div style="font-size: 1.6rem;">🔄</div>
+              <div style="font-size: 0.68rem; color: #d8b4fe; font-weight: 600;">Face-Down Quiet Mode</div>
+            </div>
+            <div style="font-size: 0.6rem; color: var(--text-muted); text-align: center;">Spatial Channel</div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Quick Face Selector -->
+      <div class="snap-bar">
+        <button class="snap-btn" onclick="snapToFace('front')">1. Screen/Squeeze</button>
+        <button class="snap-btn" onclick="snapToFace('top')">2. Mood Glow</button>
+        <button class="snap-btn" onclick="snapToFace('left')">3. Symbols</button>
+        <button class="snap-btn" onclick="snapToFace('right')">4. Texture</button>
+        <button class="snap-btn" onclick="snapToFace('bottom')">5. Haptic</button>
+        <button class="snap-btn" onclick="snapToFace('back')">6. Orientation</button>
+      </div>
+
+      <!-- CHILD'S TANGIBLE INPUT CONTROLLER -->
+      <div class="modality-controller">
+        
+        <!-- Modality 1: Pressure Squeeze -->
+        <div>
+          <div class="modality-row-title">
+            <span>Modality 1: Pressure Squeeze (Proprioceptive)</span>
+          </div>
+          <div class="action-chips-grid">
+            <div class="tangible-btn" onclick="sendChildModality('pressure', 'gentle')">
+              <span class="icon">👌</span>
+              <span>Gentle Hold ("I'm OK")</span>
+            </div>
+            <div class="tangible-btn" onclick="sendChildModality('pressure', 'firm')">
+              <span class="icon">✊</span>
+              <span>Firm Hug ("Need Care")</span>
+            </div>
+            <div class="tangible-btn" onclick="sendChildModality('pressure', 'tight')">
+              <span class="icon">💥</span>
+              <span>Tight Squeeze ("Overloaded!")</span>
+            </div>
+            <div class="tangible-btn" onclick="sendChildModality('pressure', 'double')">
+              <span class="icon">✌️</span>
+              <span>Double Pulse ("Yes / Agree")</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Modality 2: Color Glow & Symbols -->
+        <div>
+          <div class="modality-row-title">
+            <span>Modality 2 & 3: Mood Glow & Symbols (Visual/Non-Verbal)</span>
+          </div>
+          <div class="action-chips-grid">
+            <div class="tangible-btn" onclick="sendChildModality('color', 'amber')">
+              <span class="icon">🟡</span>
+              <span>Warm Amber ("Calm")</span>
+            </div>
+            <div class="tangible-btn" onclick="sendChildModality('color', 'blue')">
+              <span class="icon">🔵</span>
+              <span>Soft Blue ("Tired")</span>
+            </div>
+            <div class="tangible-btn" onclick="sendChildModality('symbol', '❤️ Love')">
+              <span class="icon">❤️</span>
+              <span>Love Symbol ("Love you")</span>
+            </div>
+            <div class="tangible-btn" onclick="sendChildModality('symbol', '🚪 Exit')">
+              <span class="icon">🚪</span>
+              <span>Door Symbol ("Want to Leave")</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+
+    <!-- ==============================================
+         PANEL B (RIGHT): PARENT'S DIGITAL TEXT MODALITY
+         ============================================== -->
+    <section class="parent-side">
+      <div class="parent-header">
+        <div>
+          <h3>Mom's Messenger</h3>
+          <p>Connected to Leo's Sensory Cube 🟢</p>
+        </div>
+        <div style="font-size: 0.72rem; color: var(--text-muted);">
+          Mutual Multi-Modal Translation
+        </div>
+      </div>
+
+      <!-- Chat Messages Stream -->
+      <div class="chat-stream" id="chatStream">
+        
+        <!-- Welcome Note -->
+        <div class="msg-row parent">
+          <div class="msg-bubble">
+            Leo, sweetie, how are you feeling right now?
+          </div>
+          <div class="msg-time">Mom (Text) • 9:30 AM</div>
+        </div>
+
+        <!-- Initial Child Tangible Message -->
+        <div class="msg-row child">
+          <div class="msg-bubble">
+            <div class="modality-badge">
+              [✊ Tangible Squeeze: Firm Hold]
+            </div>
+            "I squeezed the cube firmly."
+            
+            <div class="modality-translation">
+              <strong>✨ Modality Bridge:</strong>
+              Leo responds via proprioceptive pressure. Translated as: <em>"I hear you Mom, and I need a gentle comfort check-in."</em>
+            </div>
+          </div>
+          <div class="msg-time">Leo (Cube Squeeze) • 9:30 AM</div>
+        </div>
+
+      </div>
+
+      <!-- Parent Input & Sensory Effects Selector -->
+      <div class="parent-composer">
+        
+        <!-- Attach a Sensory Effect to Parent's Text -->
+        <div class="effects-picker">
+          <span>Attach Sensory Feedback to Cube:</span>
+          <button class="effect-btn active" id="effHaptic" onclick="toggleEffect('haptic')">🫀 Heartbeat Pulse</button>
+          <button class="effect-btn" id="effGlow" onclick="toggleEffect('glow')">✨ Warm Amber Glow</button>
+          <button class="effect-btn" id="effChime" onclick="toggleEffect('chime')">🔔 Gentle Chime</button>
+        </div>
+
+        <!-- Input Bar -->
+        <div class="input-row">
+          <input type="text" id="parentInput" class="parent-input" 
+                 placeholder="Type words to Leo (translates to sensory cube)..."
+                 onkeydown="if(event.key==='Enter') sendParentText()">
+          <button class="send-btn" onclick="sendParentText()">➤</button>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // --- 3D Cube Rotation State ---
+    let rotX = -14;
+    let rotY = 24;
+    let isRotating = false;
+    let startX, startY;
+    const cube = document.getElementById('cube');
+
+    function updateCubeTransform() {
+      cube.style.transform = `rotateX(${rotX}deg) rotateY(${rotY}deg)`;
+    }
+
+    function startRotate(e) {
+      if (e.target.closest('.front-squeeze-zone') || e.target.closest('.sym-card') || e.target.closest('.texture-box')) return;
+      isRotating = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      e.target.setPointerCapture(e.pointerId);
+    }
+
+    function doRotate(e) {
+      if (!isRotating) return;
+      rotY += (e.clientX - startX) * 0.7;
+      rotX -= (e.clientY - startY) * 0.7;
+      startX = e.clientX;
+      startY = e.clientY;
+      updateCubeTransform();
+    }
+
+    function endRotate(e) { isRotating = false; }
+
+    const faceRotations = {
+      front:  { x: 0,   y: 0 },
+      top:    { x: -90, y: 0 },
+      left:   { x: 0,   y: 90 },
+      right:  { x: 0,   y: -90 },
+      bottom: { x: 90,  y: 0 },
+      back:   { x: 0,   y: 180 }
+    };
+
+    function snapToFace(faceName) {
+      const target = faceRotations[faceName];
+      rotX = target.x;
+      rotY = target.y;
+      cube.style.transition = 'transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1)';
+      updateCubeTransform();
+      setTimeout(() => { cube.style.transition = 'transform 0.1s ease-out'; }, 400);
+    }
+
+    // --- Audio Haptics (Web Audio API) ---
+    let audioCtx = null;
+    let isSoundOn = false;
+
+    function initAudio() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+
+    function toggleAudioEngine() {
+      initAudio();
+      isSoundOn = !isSoundOn;
+      const soundBtn = document.getElementById('soundBtn');
+      const soundState = document.getElementById('soundState');
+
+      if (isSoundOn) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        soundBtn.classList.add('active');
+        soundState.textContent = 'Active';
+      } else {
+        soundBtn.classList.remove('active');
+        soundState.textContent = 'Off';
+      }
+    }
+
+    function playPulse(freq = 55, duration = 0.15) {
+      if (!isSoundOn || !audioCtx) return;
+      try {
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration + 0.01);
+      } catch (e) {}
+    }
+
+    // --- Parent Effects Toggle ---
+    let activeEffects = { haptic: true, glow: false, chime: false };
+
+    function toggleEffect(eff) {
+      activeEffects[eff] = !activeEffects[eff];
+      const btn = document.getElementById('eff' + eff.charAt(0).toUpperCase() + eff.slice(1));
+      if (activeEffects[eff]) btn.classList.add('active');
+      else btn.classList.remove('active');
+    }
+
+    // ===============================================
+    // DIRECTION 1: PARENT SENDS TEXT (Words ➔ Tangible)
+    // ===============================================
+    function sendParentText() {
+      const input = document.getElementById('parentInput');
+      const text = input.value.trim();
+      if (!text) return;
+
+      // 1. Add Parent Message to Chat Stream
+      const stream = document.getElementById('chatStream');
+      const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      let effectBadges = [];
+      if (activeEffects.haptic) effectBadges.push('🫀 Haptic Pulse');
+      if (activeEffects.glow) effectBadges.push('✨ Amber Glow');
+      if (activeEffects.chime) effectBadges.push('🔔 Chime');
+      const effectText = effectBadges.length ? `[Sent with ${effectBadges.join(', ')}]` : '';
+
+      const row = document.createElement('div');
+      row.className = 'msg-row parent';
+      row.innerHTML = `
+        <div class="msg-bubble">
+          ${escapeHtml(text)}
+          ${effectText ? `<div style="font-size: 0.65rem; color: #bae6fd; margin-top: 3px;">${effectText}</div>` : ''}
+        </div>
+        <div class="msg-time">Mom (Text) • ${now}</div>
+      `;
+      stream.appendChild(row);
+      stream.scrollTop = stream.scrollHeight;
+
+      // 2. Deliver to the Child's Cube in Tangible Modalities!
+      snapToFace('front');
+      const screen = document.getElementById('cubeScreen');
+      const screenText = document.getElementById('screenText');
+      screenText.textContent = `"${text}"`;
+
+      // Trigger attached sensory effects
+      if (activeEffects.glow) {
+        screen.style.boxShadow = '0 0 25px #f59e0b, inset 0 0 10px #f59e0b';
+        screen.style.borderColor = '#f59e0b';
+      } else {
+        screen.style.boxShadow = '0 0 15px #38bdf8';
+        screen.style.borderColor = '#38bdf8';
+      }
+
+      if (activeEffects.haptic) {
+        playPulse(55, 0.2);
+        setTimeout(() => playPulse(55, 0.2), 350);
+      }
+      if (activeEffects.chime) {
+        playPulse(440, 0.25);
+      }
+
+      setTimeout(() => {
+        screen.style.boxShadow = 'inset 0 0 8px rgba(56, 189, 248, 0.3)';
+        screen.style.borderColor = '#38bdf8';
+      }, 2500);
+
+      input.value = '';
+    }
+
+    // ===============================================
+    // DIRECTION 2: CHILD SENDS TANGIBLE (Sensory ➔ Words)
+    // ===============================================
+    function sendChildModality(modalityType, value) {
+      let badge = "";
+      let quote = "";
+      let translation = "";
+
+      if (modalityType === 'pressure') {
+        snapToFace('front');
+        if (value === 'gentle') {
+          badge = "[👌 Gentle Squeeze]";
+          quote = "Leo gently held the cube.";
+          translation = "Leo is acknowledging your message and feels calm/comfortable.";
+          playPulse(65, 0.12);
+        } else if (value === 'firm') {
+          badge = "[✊ Firm Squeeze]";
+          quote = "Leo squeezed the cube with firm pressure.";
+          translation = "Leo is seeking proprioceptive reassurance: 'I hear you, need a little comfort.'";
+          playPulse(55, 0.2);
+        } else if (value === 'tight') {
+          badge = "[💥 Tight Squeeze (90% Force)]";
+          quote = "Leo gave an intense tight squeeze.";
+          translation = "Acute sensory overload! Leo's nervous system is overwhelmed and asking for help/exit.";
+          playPulse(45, 0.3);
+        } else if (value === 'double') {
+          badge = "[✌️ Double Squeeze]";
+          quote = "Leo double-pulsed the cube.";
+          translation = "Quick affirmation: 'Yes / Got it / Agree.'";
+          playPulse(70, 0.1);
+          setTimeout(() => playPulse(70, 0.1), 180);
+        }
+      } 
+      else if (modalityType === 'color') {
+        snapToFace('top');
+        const halo = document.getElementById('haloOrb');
+        if (value === 'amber') {
+          badge = "[🟡 Mood Glow: Warm Amber]";
+          quote = "Leo turned the cube glow to Warm Amber.";
+          translation = "Visual mood signaling: Leo is feeling grounded, peaceful, and warm.";
+          halo.style.background = "#fbbf24";
+          halo.style.boxShadow = "0 0 25px #f59e0b";
+        } else if (value === 'blue') {
+          badge = "[🔵 Mood Glow: Soft Blue]";
+          quote = "Leo turned the cube glow to Soft Blue.";
+          translation = "Visual mood signaling: Leo is feeling tired, quiet, or needs alone time.";
+          halo.style.background = "#38bdf8";
+          halo.style.boxShadow = "0 0 25px #0284c7";
+        }
+        playPulse(120, 0.15);
+      }
+      else if (modalityType === 'symbol') {
+        snapToFace('left');
+        badge = `[Side 3 Symbol: ${value}]`;
+        quote = `Leo touched the "${value}" symbol.`;
+        if (value.includes('Love')) {
+          translation = "Non-verbal affection: Leo is sending love and wants an emotional hug.";
+        } else if (value.includes('Exit')) {
+          translation = "Boundary communication: Leo clearly requests to leave the current setting.";
+        } else if (value.includes('Break')) {
+          translation = "Regulation request: Leo needs a quiet pause or snack break.";
+        } else if (value.includes('OK')) {
+          translation = "Reassurance: Leo says everything is all good right now.";
+        }
+        playPulse(150, 0.12);
+      }
+      else if (modalityType === 'tactile') {
+        snapToFace('right');
+        badge = "[🖐️ Tactile Texture: Smooth Stroke]";
+        quote = "Leo stroked the textured silicone ribs.";
+        translation = "Sensory self-soothing: Leo is grounding his fingers quietly.";
+        playPulse(90, 0.1);
+      }
+
+      // Add translated message to Parent's chat
+      const stream = document.getElementById('chatStream');
+      const now = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+      const row = document.createElement('div');
+      row.className = 'msg-row child';
+      row.innerHTML = `
+        <div class="msg-bubble">
+          <div class="modality-badge">${badge}</div>
+          "${quote}"
+          
+          <div class="modality-translation">
+            <strong>✨ Modality Bridge:</strong>
+            ${translation}
+          </div>
+        </div>
+        <div class="msg-time">Leo (via Tangible Cube) • ${now}</div>
+      `;
+      stream.appendChild(row);
+      stream.scrollTop = stream.scrollHeight;
+
+      // Update front screen on Cube
+      document.getElementById('screenLabel').textContent = 'SENT TO MOM:';
+      document.getElementById('screenText').textContent = badge;
+    }
+
+    function escapeHtml(text) {
+      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+  </script>
+</body>
+</html>
