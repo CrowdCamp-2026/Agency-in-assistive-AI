@@ -1,9 +1,10 @@
-name: Deploy Demos to GitHub Pages
+name: Deploy branch demos to GitHub Pages
 
+# Rebuild whenever any branch is pushed or deleted so reviewers
+# always see every branch's pages in one place.
 on:
   push:
-    branches:
-      - main
+  delete:
   workflow_dispatch:
 
 permissions:
@@ -12,8 +13,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: pages
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -22,36 +23,21 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout main branch
+      - name: Checkout repository (all branches)
         uses: actions/checkout@v4
         with:
-          path: site
+          fetch-depth: 0
 
-      - name: Checkout ruotong branch
-        uses: actions/checkout@v4
-        with:
-          ref: ruotong
-          path: site/ruotong
-
-      - name: Checkout claire branch
-        uses: actions/checkout@v4
-        with:
-          ref: claireoconnor612-patch-1
-          path: site/claire
-
-      - name: Checkout marjory branch
-        uses: actions/checkout@v4
-        with:
-          ref: marjory-pineda
-          path: site/marjory
+      - name: Build multi-branch preview site
+        run: python3 .github/scripts/build_pages_site.py
 
       - name: Setup GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Upload Pages Artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: 'site'
+          path: site
 
       - name: Deploy to GitHub Pages
         id: deployment
