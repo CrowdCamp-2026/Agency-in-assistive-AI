@@ -21,6 +21,16 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SITE = REPO_ROOT / "site"
 SKIP_BRANCHES = {"HEAD", "gh-pages"}
 
+# Friendly labels shown on the review hub (git branch names stay unchanged).
+DISPLAY_NAMES = {
+    "main": "Qi",
+    "claireoconnor612-patch-1": "Claire",
+}
+
+
+def display_name(branch: str) -> str:
+    return DISPLAY_NAMES.get(branch, branch)
+
 
 def run(cmd: list[str], **kwargs) -> subprocess.CompletedProcess:
     return subprocess.run(cmd, check=True, text=True, capture_output=True, **kwargs)
@@ -157,6 +167,7 @@ def render_review(entries: list[dict]) -> str:
     cards: list[str] = []
     for entry in entries:
         branch = entry["branch"]
+        label = entry.get("label") or display_name(branch)
         base = entry["path"].rstrip("/")
         pages = entry.get("pages") or []
         note = entry.get("note") or ""
@@ -179,7 +190,7 @@ def render_review(entries: list[dict]) -> str:
         cards.append(
             f"""
 <article class="card">
-  <h2><code>{escape(branch)}</code></h2>
+  <h2><code>{escape(label)}</code></h2>
   {note_html}
   <ul>
     {''.join(links) if links else '<li><em>No HTML pages</em></li>'}
@@ -304,10 +315,11 @@ def main() -> None:
         entries.append(
             {
                 "branch": "main",
+                "label": display_name("main"),
                 "slug": "",
                 "path": "/",
                 "pages": ["library.html"],
-                "note": "Main publishes library only at site root",
+                "note": "Qi publishes library only at site root",
             }
         )
         print("Main: published library.html as / and /library.html")
@@ -329,6 +341,7 @@ def main() -> None:
         entries.append(
             {
                 "branch": branch,
+                "label": display_name(branch),
                 "slug": slug,
                 "path": f"/{slug}/",
                 "pages": pages,
