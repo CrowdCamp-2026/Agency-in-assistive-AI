@@ -311,7 +311,7 @@ def main() -> None:
                 "slug": "",
                 "path": "/",
                 "pages": ["library.html"],
-                "note": "Qi publishes library only at site root",
+                "note": "",
             }
         )
         print("Main: published library.html as / and /library.html")
